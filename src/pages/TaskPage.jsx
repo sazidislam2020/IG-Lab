@@ -216,7 +216,7 @@ export default function TaskPage() {
   }
 
   return (
-    <div style={S.page}>
+    <div className="task-page" style={S.page}>
       {/* Header */}
       <div style={S.header}>
         <div style={S.headerLeft}>
@@ -354,6 +354,17 @@ export default function TaskPage() {
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .task-page .split { flex-direction: column !important; }
+          .task-page .leftPanel { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; min-height: 45vh; }
+          .task-page .rightPanel { width: 100% !important; min-height: 35vh; }
+          .task-page header { flex-wrap: wrap; gap: 8px; padding: 10px 16px !important; }
+          .task-page header > div:last-child { gap: 6px; }
+          .task-page .taskPrompt { max-height: 120px !important; padding: 12px !important; }
+        }
+      `}</style>
     </div>
   );
 }

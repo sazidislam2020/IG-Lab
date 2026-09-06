@@ -115,7 +115,7 @@ export default function AdminApprovals() {
   ).length;
 
   return (
-    <div style={styles.page}>
+    <div className="admin-page" style={styles.page}>
       <nav style={styles.nav}>
         <div style={styles.brand}>
           <span style={styles.spark} /> IGNITE LAB
@@ -244,6 +244,16 @@ export default function AdminApprovals() {
           <a href="/dashboard" style={styles.link}>← Back to Dashboard</a>
         </div>
       </main>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-page nav { padding: 12px 16px !important; }
+          .admin-page main { padding: 20px 16px !important; }
+          .admin-page table { font-size: 12px !important; }
+          .admin-page th:nth-child(4),
+          .admin-page td:nth-child(4) { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

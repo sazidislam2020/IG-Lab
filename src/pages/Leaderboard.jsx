@@ -83,7 +83,7 @@ export default function Leaderboard() {
   const rest = students.slice(3);
 
   return (
-    <div style={S.page}>
+    <div className="leaderboard-page" style={S.page}>
       <div style={S.header}>
         <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
         <h1 style={S.title}>🏆 Leaderboard</h1>
@@ -136,6 +136,18 @@ export default function Leaderboard() {
           </div>
         </>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .leaderboard-page { padding: 16px !important; }
+          .leaderboard-page .topThree { gap: 12px !important; }
+          .leaderboard-page .podium { width: 140px !important; padding: 16px 12px !important; }
+          .leaderboard-page .listHeader,
+          .leaderboard-page .row { grid-template-columns: 40px 1fr 80px !important; padding: 10px 12px !important; }
+          .leaderboard-page .listHeader span:last-child,
+          .leaderboard-page .row > span:last-child { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

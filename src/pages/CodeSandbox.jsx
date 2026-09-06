@@ -140,7 +140,7 @@ export default function CodeSandbox() {
   }
 
   return (
-    <div style={S.page}>
+    <div className="code-sandbox-page" style={S.page}>
       {/* Header */}
       <div style={S.header}>
         <div style={S.headerLeft}>
@@ -217,6 +217,16 @@ export default function CodeSandbox() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .code-sandbox-page .split { flex-direction: column !important; }
+          .code-sandbox-page .editorWrap { border-right: none !important; border-bottom: 1px solid rgba(237,239,243,0.09) !important; min-height: 40vh; }
+          .code-sandbox-page .outputWrap { width: 100% !important; min-height: 30vh; }
+          .code-sandbox-page header { flex-wrap: wrap; gap: 8px; padding: 10px 16px !important; }
+          .code-sandbox-page header > div:last-child { gap: 8px; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -243,3 +253,5 @@ const S = {
   outputPlaceholder: {color:FAINT,textAlign:"center",marginTop:60,fontSize:14},
   outputLine: {whiteSpace:"pre-wrap",wordBreak:"break-all"},
 };
+
+// Responsive styles injected via <style> tag

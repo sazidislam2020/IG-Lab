@@ -411,7 +411,7 @@ export default function SiteSettings() {
 
   return (
     <SettingsCtx.Provider value={C}>
-      <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: C.fontBody }}>
+      <div className="admin-page" style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: C.fontBody }}>
         {/* Header */}
         <div style={{ borderBottom: `1px solid ${C.border}`, padding: "16px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg === "#FAFAFA" ? "rgba(255,255,255,0.92)" : "rgba(9,9,11,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -475,6 +475,14 @@ export default function SiteSettings() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-page > div:first-child { padding: 12px 16px !important; }
+          .admin-page main { padding: 20px 16px !important; }
+          .admin-page .grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </SettingsCtx.Provider>
   );
 }

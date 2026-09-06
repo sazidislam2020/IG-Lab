@@ -47,7 +47,7 @@ export default function AuditLog() {
   if (loading) return <div style={S.page}><div style={S.loading}>Loading audit log...</div></div>;
 
   return (
-    <div style={S.page}>
+    <div className="admin-page" style={S.page}>
       <div style={S.header}>
         <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
         <h1 style={S.title}>📋 Audit Log</h1>
@@ -95,6 +95,15 @@ export default function AuditLog() {
           </tbody>
         </table>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-page { padding: 16px !important; }
+          .admin-page table { font-size: 12px !important; }
+          .admin-page th:nth-child(3),
+          .admin-page td:nth-child(3) { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

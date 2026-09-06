@@ -93,7 +93,7 @@ export default function StudentProfile() {
   if (loading) return <div style={S.page}><div style={S.loading}>Loading profile...</div></div>;
 
   return (
-    <div style={S.page}>
+    <div className="profile-page" style={S.page}>
       <div style={S.header}>
         <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
         <h1 style={S.title}>👤 My Profile</h1>
@@ -190,6 +190,17 @@ export default function StudentProfile() {
           </table>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .profile-page { padding: 16px !important; }
+          .profile-page table { font-size: 12px !important; }
+          .profile-page th:nth-child(3),
+          .profile-page td:nth-child(3) { display: none !important; }
+          .profile-page th:nth-child(6),
+          .profile-page td:nth-child(6) { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

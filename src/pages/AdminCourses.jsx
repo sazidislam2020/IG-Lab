@@ -185,7 +185,7 @@ export default function AdminCourses() {
   if (loading) return <div style={S.page}><div style={S.loading}>Loading...</div></div>;
 
   return (
-    <div style={S.page}>
+    <div className="admin-page" style={S.page}>
       <nav style={S.nav}>
         <Link to="/dashboard" style={{ ...S.brand, textDecoration: 'none', color: '#e0e0e0' }}>
           <span style={S.spark} /> IGNITE LAB
@@ -452,6 +452,14 @@ export default function AdminCourses() {
           </div>
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-page nav { padding: 12px 16px !important; }
+          .admin-page main { padding: 20px 16px !important; }
+          .admin-page .grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
