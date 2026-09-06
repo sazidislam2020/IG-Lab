@@ -27,6 +27,7 @@ import CreateClass from "./pages/CreateClass";
 import SiteSettings from "./pages/SiteSettings";
 import PaymentPage from "./pages/PaymentPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BottomNav from "./components/BottomNav";
 
 export default function App() {
   return (
@@ -254,6 +255,7 @@ export default function App() {
           {/* Catch all */}
           <Route path="*" element={<Landing />} />
         </Routes>
+        <BottomNav />
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>

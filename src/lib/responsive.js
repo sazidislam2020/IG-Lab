@@ -99,6 +99,12 @@ export const responsiveCSS = `
     .hide-desktop { display: none !important; }
   }
   
+  /* Bottom nav padding on mobile */
+  @media (max-width: 767px) {
+    body { padding-bottom: 72px !important; }
+    #root > div > div:last-child:not(nav) { padding-bottom: 72px !important; }
+  }
+  
   /* Safe area for iPhone notch */
   @supports (padding: env(safe-area-inset-top)) {
     .safe-top { padding-top: env(safe-area-inset-top); }
