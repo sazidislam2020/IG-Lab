@@ -81,11 +81,6 @@ export default function LiveClassRoom() {
     }
 
     setJoined(true);
-
-    // If there's a meeting link, open it immediately
-    if (cls.meet_link) {
-      window.open(cls.meet_link, "_blank");
-    }
   }
 
   async function refreshAttendees() {
@@ -156,6 +151,25 @@ export default function LiveClassRoom() {
             {cls.description && (
               <p style={{ color: DIM, fontSize: 14, marginBottom: 16 }}>{cls.description}</p>
             )}
+
+            {hasLink ? (
+              <div style={{
+                background: "#10B98118", border: "1px solid #10B98140",
+                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#6EE7B7",
+                marginBottom: 16, textAlign: "left",
+              }}>
+                ✅ <strong>Google Meet link ready</strong> — opens when you join
+              </div>
+            ) : (
+              <div style={{
+                background: "#F59E0B18", border: "1px solid #F59E0B40",
+                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#FCD34D",
+                marginBottom: 16, textAlign: "left",
+              }}>
+                ⚠️ <strong>No meeting link</strong> — the host hasn't added a Google Meet link yet
+              </div>
+            )}
+
             <div style={S.lobbyMeta}>
               <div style={S.lobbyMetaItem}>
                 <span style={{ color: "#5C6478" }}>Host</span>
@@ -169,35 +183,11 @@ export default function LiveClassRoom() {
                 <span style={{ color: "#5C6478" }}>Duration</span>
                 <span>{cls.duration_min} minutes</span>
               </div>
-              {cls.subject && (
-                <div style={S.lobbyMetaItem}>
-                  <span style={{ color: "#5C6478" }}>Subject</span>
-                  <span>{cls.subject}</span>
-                </div>
-              )}
               <div style={S.lobbyMetaItem}>
                 <span style={{ color: "#5C6478" }}>Participants</span>
                 <span>{attendees.length} joined</span>
               </div>
             </div>
-
-            {hasLink ? (
-              <div style={{
-                background: "#10B98118", border: "1px solid #10B98140",
-                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#6EE7B7",
-                marginTop: 16, textAlign: "left", wordBreak: "break-all",
-              }}>
-                ✅ <strong>Meeting link ready</strong> — opens in a new tab when you join.
-              </div>
-            ) : (
-              <div style={{
-                background: "#F59E0B18", border: "1px solid #F59E0B40",
-                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#FCD34D",
-                marginTop: 16, textAlign: "left",
-              }}>
-                ⚠️ <strong>No meeting link</strong> — the host hasn't added a video call link yet.
-              </div>
-            )}
 
             <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
               <button onClick={joinClass} style={S.joinBtn}>
@@ -213,7 +203,7 @@ export default function LiveClassRoom() {
     );
   }
 
-  // In-class view — shows meeting info and participants
+  // In-class view — shows meeting link and participants
   return (
     <div style={S.roomPage}>
       {/* Top bar */}
@@ -234,14 +224,14 @@ export default function LiveClassRoom() {
       </div>
 
       <div style={S.roomBody}>
-        {/* Main content — meeting link or waiting */}
+        {/* Main content — meeting link */}
         <div style={S.mainContent}>
           {hasLink ? (
             <div style={S.linkCard}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🎥</div>
               <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Video Call is Live!</h2>
               <p style={{ color: DIM, fontSize: 14, marginBottom: 20, maxWidth: 400 }}>
-                Click the button below to open the video call in a new tab.
+                Click below to open the Google Meet call in a new tab.
               </p>
               <a
                 href={cls.meet_link}
@@ -249,7 +239,7 @@ export default function LiveClassRoom() {
                 rel="noopener noreferrer"
                 style={S.meetLinkBtn}
               >
-                🔗 Open Meeting Link
+                🔗 Open Google Meet
               </a>
               <p style={{ color: "#5C6478", fontSize: 11, marginTop: 12, wordBreak: "break-all", maxWidth: 400 }}>
                 {cls.meet_link}
@@ -260,7 +250,7 @@ export default function LiveClassRoom() {
               <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
               <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Waiting for meeting link...</h2>
               <p style={{ color: DIM, fontSize: 14, maxWidth: 400 }}>
-                The host will share a meeting link soon. Stay in this page to see when it's available.
+                The host will share a Google Meet link soon. Stay on this page.
               </p>
             </div>
           )}
@@ -339,7 +329,7 @@ const S = {
   },
   liveBadge: {
     fontSize: 11, fontWeight: 700, color: "#F87171", background: "#F8717118",
-    padding: "3px 10px", borderRadius: 100, animation: "pulse 2s infinite",
+    padding: "3px 10px", borderRadius: 100,
   },
   endBtn: {
     background: "#F87171", color: "#fff", border: "none",
