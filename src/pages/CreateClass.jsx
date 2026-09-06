@@ -101,7 +101,7 @@ export default function CreateClass() {
   }
 
   return (
-    <div style={S.page}>
+    <div className="create-class-page" style={S.page}>
       <nav style={S.nav}>
         <div style={S.navLeft}>
           <a href="/classes" style={S.backLink}>← Live Classes</a>
@@ -271,6 +271,14 @@ export default function CreateClass() {
           </div>
         </div>
       </main>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .create-class-page nav { padding: 12px 16px !important; }
+          .create-class-page main { padding: 24px 16px !important; }
+          .create-class-page form { padding: 20px !important; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -160,7 +160,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "'Inter', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
+    <div className="dashboard-page" style={{ minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "'Inter', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
       {/* Nav */}
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 32px", borderBottom: `1px solid ${t.border}`, background: isDark ? "rgba(9,9,11,0.92)" : "rgba(250,250,250,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
@@ -238,7 +238,7 @@ export default function Dashboard() {
         )}
 
         {/* Two-column layout */}
-        <div style={{ display: "grid", gridTemplateColumns: isStudent ? "1fr 380px" : "1fr", gap: 24 }}>
+        <div className="dashboard-grid" style={{ display: "grid", gridTemplateColumns: isStudent ? "1fr 380px" : "1fr", gap: 24 }}>
           {/* Left column */}
           <div>
             {/* Course Progress */}
@@ -398,6 +398,23 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .dashboard-page nav { padding: 12px 16px !important; }
+          .dashboard-page nav > div:last-child { gap: 6px !important; }
+          .dashboard-page nav > div:last-child > span:first-child { display: none !important; }
+          .dashboard-page main { padding: 24px 16px !important; }
+          .dashboard-grid { grid-template-columns: 1fr !important; }
+          .dashboard-page table { font-size: 12px !important; }
+          .dashboard-page th:nth-child(2),
+          .dashboard-page td:nth-child(2) { display: none !important; }
+        }
+        @media (max-width: 600px) {
+          .dashboard-page th:nth-child(5),
+          .dashboard-page td:nth-child(5) { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

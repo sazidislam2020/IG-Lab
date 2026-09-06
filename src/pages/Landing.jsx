@@ -142,7 +142,7 @@ function Nav({ S, TC }) {
             </div>
             <span style={{ fontFamily: T.fontDisplay, fontSize: 16, fontWeight: 700, color: TC.txt, letterSpacing: "-0.03em" }}>{S.site_name}</span>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 2 }}>
             {["Features", "Pricing"].map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} style={{ fontFamily: T.fontBody, fontSize: 13, fontWeight: 500, color: TC.txtSec, textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color 0.2s", whiteSpace: "nowrap" }}>{l}</a>
             ))}
@@ -156,7 +156,7 @@ function Nav({ S, TC }) {
               )}
             </button>
           </div>
-          <button onClick={() => setMobileOpen(!mobileOpen)} style={{ display: "none", flexDirection: "column", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 8, flexShrink: 0 }} aria-label="Menu">
+          <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)} style={{ display: "none", flexDirection: "column", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 8, flexShrink: 0 }} aria-label="Menu">
             <span style={{ width: 20, height: 2, background: TC.txt, borderRadius: 1, transition: "all 0.3s", transform: mobileOpen ? "rotate(45deg) translate(5px,5px)" : "none" }} />
             <span style={{ width: 20, height: 2, background: TC.txt, borderRadius: 1, opacity: mobileOpen ? 0 : 1, transition: "all 0.3s" }} />
             <span style={{ width: 20, height: 2, background: TC.txt, borderRadius: 1, transition: "all 0.3s", transform: mobileOpen ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
@@ -198,13 +198,13 @@ function Hero({ S, TC }) {
   }, []);
 
   return (
-    <section style={{ position: "relative", minHeight: "100dvh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
+    <section className="hero-section" style={{ position: "relative", minHeight: "100dvh", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
       {/* Background effects */}
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${T.accent}12, transparent 60%)`, pointerEvents: "none" }} />
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 50% at 80% 50%, ${T.cyan}08, transparent 50%)`, pointerEvents: "none" }} />
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "72px 72px", maskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", pointerEvents: "none" }} />
 
-      <div style={{ maxWidth: T.maxW, margin: "0 auto", padding: "120px 40px 80px", width: "100%", display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+      <div className="hero-content" style={{ maxWidth: T.maxW, margin: "0 auto", padding: "120px 40px 80px", width: "100%", display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         {/* Left */}
         <div style={{ flex: "1 1 500px", minWidth: 0 }}>
           <Reveal>
@@ -227,7 +227,7 @@ function Hero({ S, TC }) {
           </Reveal>
 
           <Reveal delay={3}>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
+            <div className="cta-buttons" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
               <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.fontBody, fontSize: 16, fontWeight: 600, color: "#fff", background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "16px 32px", borderRadius: 12, textDecoration: "none", transition: "all 0.4s " + T.ease, boxShadow: `0 0 24px ${T.accent}30, 0 4px 16px rgba(0,0,0,0.4)` }}>
                 {S.hero_cta_text}
               </Link>
@@ -238,7 +238,7 @@ function Hero({ S, TC }) {
           </Reveal>
 
           <Reveal delay={4}>
-            <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+            <div className="stats-row" style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
               {[
                 { num: S.hero_stat1_num, label: S.hero_stat1_label },
                 { num: S.hero_stat2_num, label: S.hero_stat2_label },
@@ -309,8 +309,8 @@ function Partners({ S, TC }) {
   const doubled = [...partners, ...partners];
 
   return (
-    <section style={{ padding: "0 40px 80px", maxWidth: T.maxW, margin: "0 auto", position: "relative", zIndex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 32, borderBottom: `1px solid ${c.border}`, paddingBottom: 40 }}>
+    <section className="section-padding" style={{ padding: "0 40px 80px", maxWidth: T.maxW, margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div className="partners-row" style={{ display: "flex", alignItems: "center", gap: 32, borderBottom: `1px solid ${c.border}`, paddingBottom: 40 }}>
         <div style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 500, color: c.txtDim, textTransform: "uppercase", letterSpacing: "0.12em", whiteSpace: "nowrap", flexShrink: 0 }}>{S.site_tagline || "Trusted by educators"}</div>
         <div style={{ overflow: "hidden", flex: 1, maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)" }}>
           <div className="marquee-track">
@@ -340,7 +340,7 @@ function Features({ S, TC }) {
   ];
 
   return (
-    <section id="features" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
+    <section id="features" className="section-padding" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
       <Reveal>
         <h2 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", color: c.txt, textAlign: "center", marginBottom: 16 }}>
           {S.features_title}
@@ -351,7 +351,7 @@ function Features({ S, TC }) {
           {S.features_subtitle}
         </p>
       </Reveal>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+      <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
         {features.map((f, i) => (
           <Reveal key={i} delay={i + 1}>
             <div style={{ position: "relative", background: c.card, border: `1px solid ${c.border}`, borderRadius: 16, padding: "32px 28px", transition: "all 0.4s " + T.ease, cursor: "default" }}
@@ -379,13 +379,13 @@ function HowItWorks({ S, TC }) {
   ];
 
   return (
-    <section id="how" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
+    <section id="how" className="section-padding" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
       <Reveal>
         <h2 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.03em", color: c.txt, textAlign: "center", marginBottom: 64 }}>
           {S.how_title}
         </h2>
       </Reveal>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 40 }}>
+      <div className="how-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 40 }}>
         {steps.map((s, i) => (
           <Reveal key={i} delay={i + 1}>
             <div style={{ textAlign: "center", padding: "40px 24px" }}>
@@ -416,7 +416,7 @@ function Pricing({ S, TC }) {
   }, []);
 
   return (
-    <section id="pricing" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
+    <section id="pricing" className="section-padding" style={{ padding: "120px 40px", maxWidth: T.maxW, margin: "0 auto" }}>
       <Reveal>
         <h2 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, letterSpacing: "-0.03em", color: c.txt, textAlign: "center", marginBottom: 12 }}>
           {S.pricing_title}
@@ -427,7 +427,7 @@ function Pricing({ S, TC }) {
           {S.pricing_subtitle}
         </p>
       </Reveal>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, alignItems: "start" }}>
+      <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, alignItems: "start" }}>
         {plans.map((p, i) => (
           <Reveal key={i} delay={Math.min(i + 1, 4)}>
             <div style={{ position: "relative", background: p.popular ? `${T.accent}08` : c.card, border: `1px solid ${p.popular ? T.accent + "40" : c.border}`, borderRadius: 16, padding: "32px 24px", display: "flex", flexDirection: "column", height: "100%", transition: "all 0.4s " + T.ease }}
@@ -464,10 +464,10 @@ function Pricing({ S, TC }) {
 function CTA({ S, TC }) {
   const c = TC;
   return (
-    <section style={{ padding: "120px 40px", position: "relative" }}>
+    <section className="section-padding" style={{ padding: "120px 40px", position: "relative" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 50% at 50% 50%, ${T.accent}10, transparent)`, pointerEvents: "none" }} />
       <Reveal>
-        <div style={{ position: "relative", maxWidth: 700, margin: "0 auto", textAlign: "center", padding: "64px 48px", background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
+        <div className="cta-card" style={{ position: "relative", maxWidth: 700, margin: "0 auto", textAlign: "center", padding: "64px 48px", background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
           <h2 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.03em", color: c.txt, marginBottom: 16 }}>
             {S.cta_title}
           </h2>
@@ -489,9 +489,9 @@ function CTA({ S, TC }) {
 function Footer({ S, TC }) {
   const c = TC;
   return (
-    <footer style={{ borderTop: `1px solid ${T.border}`, padding: "64px 40px 32px", background: c.surface, position: "relative", zIndex: 1 }}>
+    <footer className="section-padding" style={{ borderTop: `1px solid ${T.border}`, padding: "64px 40px 32px", background: c.surface, position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: T.maxW, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 48, marginBottom: 40, flexWrap: "wrap" }}>
+        <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", gap: 48, marginBottom: 40, flexWrap: "wrap" }}>
           <div style={{ maxWidth: 280 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <div style={{ width: 24, height: 24, borderRadius: 6, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -501,7 +501,7 @@ function Footer({ S, TC }) {
             </div>
             <p style={{ fontFamily: T.fontBody, fontSize: 13, lineHeight: 1.6, color: T.txtDim }}>{S.footer_description}</p>
           </div>
-          <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
+          <div className="footer-links" style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
             {[
               { head: "Platform", links: ["Features", "Pricing", "How It Works"] },
               { head: "Resources", links: ["Documentation", "Community", "Blog"] },
@@ -544,15 +544,34 @@ export default function Landing() {
       <CTA S={S} TC={TC} />
       <Footer S={S} TC={TC} />
       <style>{`
-        @media (max-width: 900px) {
-          section:first-of-type > div:last-child { flex-direction: column !important; gap: 40px !important; padding: 0 20px !important; }
-          #features > div:last-child { grid-template-columns: 1fr !important; }
-          #how > div:last-child { grid-template-columns: 1fr !important; }
-          #pricing > div:last-child { grid-template-columns: 1fr !important; }
-          nav > div:nth-child(2) { display: none !important; }
-          nav > button { display: flex !important; }
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+          nav .desktop-nav { display: none !important; }
+          nav .mobile-toggle { display: flex !important; }
+          .hero-section { padding: 100px 20px 60px !important; }
+          .hero-content { flex-direction: column !important; gap: 32px !important; }
+          .hero-left, .hero-right { flex: 1 1 100% !important; min-width: 100% !important; }
+          .hero-right { display: none !important; }
+          .stats-row { gap: 24px !important; }
+          .cta-buttons { flex-direction: column !important; }
+          .cta-buttons a, .cta-buttons button { width: 100% !important; justify-content: center !important; }
+          .features-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .how-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+          .pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .footer-grid { flex-direction: column !important; gap: 32px !important; }
+          .footer-links { flex-direction: column !important; gap: 24px !important; }
+          .partners-row { flex-direction: column !important; gap: 16px !important; }
+          .section-padding { padding: 60px 20px !important; }
+          .cta-card { padding: 40px 24px !important; }
         }
-        @media (min-width: 769px) { nav > button { display: none !important; } }
+        @media (min-width: 769px) {
+          nav .mobile-toggle { display: none !important; }
+        }
+        /* Tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
       `}</style>
     </div>
   );

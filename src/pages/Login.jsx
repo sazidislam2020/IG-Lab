@@ -106,6 +106,7 @@ const makeStyles = (t) => ({
     border: `1px solid ${t.border}`,
     borderRadius: 12,
     padding: "40px 32px",
+    boxSizing: "border-box",
   },
   brand: {
     display: "flex",
