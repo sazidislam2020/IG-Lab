@@ -26,6 +26,8 @@ import LiveClassRoom from "./pages/LiveClassRoom";
 import CreateClass from "./pages/CreateClass";
 import SiteSettings from "./pages/SiteSettings";
 import PaymentPage from "./pages/PaymentPage";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminUserManagement from "./pages/AdminUserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "./components/BottomNav";
 
@@ -148,6 +150,26 @@ export default function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminCourses />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* User Management - Super Admin */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute requiredRole="super_admin">
+                <AdminUserManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Analytics - Admin & Super Admin */}
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminAnalytics />
               </ProtectedRoute>
             }
           />

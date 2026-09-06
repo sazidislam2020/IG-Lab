@@ -4,6 +4,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
+import SearchModal from "../components/SearchModal";
 
 export default function Dashboard() {
   const { user, profile, signOut, isStudent, isTeacher, isAdmin, isSuperAdmin } = useAuth();
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [topStudents, setTopStudents] = useState([]);
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const { subscription, isFree, isPaid, loading: subLoading } = useSubscription(user?.id);
 
@@ -26,6 +28,21 @@ export default function Dashboard() {
     if (!user) return;
     loadDashboardData();
   }, [user?.id]);
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   async function loadDashboardData() {
     setLoading(true);
@@ -160,6 +177,8 @@ export default function Dashboard() {
   }
 
   return (
+    <>
+    <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     <div className="dashboard-page" style={{ minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "'Inter', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
       {/* Nav */}
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 32px", borderBottom: `1px solid ${t.border}`, background: isDark ? "rgba(9,9,11,0.92)" : "rgba(250,250,250,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
@@ -169,6 +188,9 @@ export default function Dashboard() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: roleColor, border: `1px solid ${roleColor}40`, background: `${roleColor}14`, padding: "4px 10px", borderRadius: 100 }}>{roleLabel}</span>
+          <button onClick={() => setSearchOpen(true)} style={{ background: t.card, border: `1px solid ${t.border}`, color: t.txtDim, padding: "6px 12px", borderRadius: 6, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            🔍 <span style={{ opacity: 0.5 }}>Search...</span> <span style={{ background: t.border, padding: "1px 5px", borderRadius: 3, fontSize: 10 }}>⌘K</span>
+          </button>
           <span style={{ fontSize: 13, color: t.txtSec }}>{profile?.full_name?.split(" ")[0] || profile?.email}</span>
           <button onClick={toggleTheme} style={{ background: "transparent", border: `1px solid ${t.border}`, color: t.txt, padding: "6px 8px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center" }} title={isDark ? "Light mode" : "Dark mode"}>
             {isDark ? (
@@ -285,13 +307,16 @@ export default function Dashboard() {
                     <ActionCard icon="📡" title="Start Call" desc="Live video session" color="#F87171" t={t} onClick={() => navigate("/classes/create")} />
                     <ActionCard icon="📝" title="Courses" desc="Manage content" color="#FF6B2B" t={t} onClick={() => navigate("/admin/courses")} />
                     <ActionCard icon="🎨" title="Site Settings" desc="Customize site" color="#A78BFA" t={t} onClick={() => navigate("/admin/site-settings")} />
+                    <ActionCard icon="📊" title="Analytics" desc="View stats" color="#38BDF8" t={t} onClick={() => navigate("/admin/analytics")} />
                   </>
                 )}
                 {isSuperAdmin && (
                   <>
+                    <ActionCard icon="👥" title="User Management" desc="Manage all users" color="#FF5A1F" t={t} onClick={() => navigate("/admin/users")} />
                     <ActionCard icon="🔐" title="Approvals" desc="Review accounts" color="#FFB238" t={t} onClick={() => navigate("/admin/approvals")} />
                     <ActionCard icon="📋" title="Audit Log" desc="Review actions" color="#38BDF8" t={t} onClick={() => navigate("/admin/audit-log")} />
                     <ActionCard icon="🎨" title="Site Settings" desc="Customize site" color="#A78BFA" t={t} onClick={() => navigate("/admin/site-settings")} />
+                    <ActionCard icon="📊" title="Analytics" desc="View stats" color="#38BDF8" t={t} onClick={() => navigate("/admin/analytics")} />
                   </>
                 )}
               </div>
@@ -416,6 +441,7 @@ export default function Dashboard() {
         }
       `}</style>
     </div>
+    </>
   );
 }
 
