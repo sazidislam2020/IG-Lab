@@ -63,6 +63,11 @@ export default function AdminCourses() {
   const [activeTab, setActiveTab] = useState('courses');
   const [toggling, setToggling] = useState(null);
 
+  // Certificate management
+  const [certCourse, setCertCourse] = useState(null); // course being managed
+  const [certStudents, setCertStudents] = useState([]); // enrollment rows + status
+  const [certLoading, setCertLoading] = useState(false);
+
   // Form state
   const [form, setForm] = useState({});
 
@@ -80,6 +85,70 @@ export default function AdminCourses() {
     const newFree = !course.is_free;
     await supabase.from('courses').update({ is_free: newFree }).eq('id', course.id);
     setCourses(prev => prev.map(c => c.id === course.id ? { ...c, is_free: newFree } : c));
+  }
+
+  async function toggleCourseCertificate(course) {
+    const next = course.certificate_enabled === false ? true : false;
+    const { error } = await supabase.from('courses').update({ certificate_enabled: next }).eq('id', course.id);
+    if (error) { alert('Failed to update: ' + error.message); return; }
+    setCourses(prev => prev.map(c => c.id === course.id ? { ...c, certificate_enabled: next } : c));
+  }
+
+  async function openCertManager(course) {
+    setCertCourse(course);
+    setCertLoading(true);
+    // Enrolled students
+    const { data: enrollments } = await supabase
+      .from('course_enrollments')
+      .select('user_id, profiles(full_name, email)')
+      .eq('course_id', course.id);
+    // Issued certificates for this course
+    const { data: certs } = await supabase
+      .from('certificates')
+      .select('id, user_id, certificate_id, earned_at')
+      .eq('course_id', course.id);
+    // Blocks for this course
+    const { data: blocks } = await supabase
+      .from('certificate_blocks')
+      .select('id, user_id, reason')
+      .eq('course_id', course.id);
+
+    const rows = (enrollments || []).map(en => ({
+      user_id: en.user_id,
+      name: en.profiles?.full_name || en.profiles?.email || en.user_id,
+      cert: (certs || []).find(c => c.user_id === en.user_id) || null,
+      block: (blocks || []).find(b => b.user_id === en.user_id) || null,
+    }));
+    setCertStudents(rows);
+    setCertLoading(false);
+  }
+
+  async function blockStudentCertificate(userId, name) {
+    const reason = window.prompt(
+      `Block ${name} from the certificate for "${certCourse.title}"?\n\nEnter the message the student will see:`,
+      'You are not eligible for this certificate. Please contact your instructor.'
+    );
+    if (reason === null) return;
+    const { error } = await supabase.from('certificate_blocks').upsert({
+      user_id: userId,
+      course_id: certCourse.id,
+      reason: reason || 'You are not eligible for this certificate.',
+    });
+    if (error) { alert('Failed to block: ' + error.message); return; }
+    openCertManager(certCourse);
+  }
+
+  async function unblockStudentCertificate(userId) {
+    if (!window.confirm('Allow this student to earn the certificate again?')) return;
+    await supabase.from('certificate_blocks').delete()
+      .eq('user_id', userId).eq('course_id', certCourse.id);
+    openCertManager(certCourse);
+  }
+
+  async function revokeCertificate(cert) {
+    if (!window.confirm(`Revoke the earned certificate (${cert.certificate_id})? The student will lose it.`)) return;
+    await supabase.from('certificates').delete().eq('id', cert.id);
+    openCertManager(certCourse);
   }
 
   async function fetchModules(courseId) {
@@ -235,6 +304,21 @@ export default function AdminCourses() {
                       >
                         {course.is_free ? '🆓 Free Course' : '💳 Paid Course'}
                       </button>
+                      {/* CERTIFICATE ON/OFF TOGGLE */}
+                      <button
+                        onClick={() => toggleCourseCertificate(course)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                          cursor: 'pointer', border: 'none',
+                          background: course.certificate_enabled === false ? 'rgba(148,163,184,0.15)' : 'rgba(168,85,247,0.18)',
+                          color: course.certificate_enabled === false ? '#94A3B8' : '#C084FC',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {course.certificate_enabled === false ? '🚫 No Cert' : '🎓 Certificate'}
+                      </button>
+                      <button onClick={() => openCertManager(course)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>🎓 Certs</button>
                       <button onClick={() => { setSelectedCourse(course); fetchModules(course.id); }} style={{ ...S.btnSmall, background: 'rgba(62,207,142,0.12)', color: '#3ECF8E' }}>Open →</button>
                       <button onClick={() => openModal('course', course)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' }}>Edit</button>
                       <button onClick={() => deleteItem('courses', course.id, fetchCourses)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Delete</button>
@@ -246,6 +330,64 @@ export default function AdminCourses() {
                     {course.is_free && (
                       <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(74,222,128,0.12)', color: '#4ADE80' }}>🆓 Free</span>
                     )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Certificate Manager */}
+        {certCourse && (
+          <div>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <button onClick={() => setCertCourse(null)} style={S.btnGhost}>← Back to Courses</button>
+                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>🎓 Certificates — {certCourse.title}</span>
+              </div>
+              <button
+                onClick={() => toggleCourseCertificate(certCourse)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', border: 'none',
+                  background: certCourse.certificate_enabled === false ? 'rgba(148,163,184,0.15)' : 'rgba(168,85,247,0.18)',
+                  color: certCourse.certificate_enabled === false ? '#94A3B8' : '#C084FC',
+                }}
+              >
+                {certCourse.certificate_enabled === false ? '🚫 Certificates OFF' : '🎓 Certificates ON'}
+              </button>
+            </div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+              When certificates are ON, every student who completes all tasks automatically earns the certificate.
+              Blocking a student prevents their certificate and shows them your message instead.
+            </div>
+            {certLoading ? (
+              <div style={S.loading}>Loading students...</div>
+            ) : certStudents.length === 0 ? (
+              <div style={S.empty}>No students enrolled in this course yet.</div>
+            ) : (
+              certStudents.map(st => (
+                <div key={st.user_id} style={{ ...S.card, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{st.name}</div>
+                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                        {st.cert ? `✅ Certificate earned ${new Date(st.cert.earned_at).toLocaleDateString()} (${st.cert.certificate_id})`
+                          : st.block ? `🚫 Blocked — "${st.block.reason}"`
+                          : '⏳ Course not completed yet'}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {st.block ? (
+                        <button onClick={() => unblockStudentCertificate(st.user_id)} style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: '#4ADE80' }}>Unblock</button>
+                      ) : (
+                        <button onClick={() => blockStudentCertificate(st.user_id, st.name)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>🚫 Block</button>
+                      )}
+                      {st.cert && (
+                        <button onClick={() => revokeCertificate(st.cert)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>Revoke</button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))

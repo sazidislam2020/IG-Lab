@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { downloadCertificate, shareCertificate, shareOnLinkedIn, shareOnFacebook, copyCertificateLink } from '../lib/certificate';
+import CertificateView from '../components/CertificateView';
 
 const S = {
   page: { minHeight: '100vh', background: '#0a0a0f', color: '#e0e0e0', fontFamily: "'Inter',sans-serif", padding: '20px 40px' },
@@ -179,95 +179,15 @@ export default function StudentProfile() {
                     <div style={{ fontSize: 12, color: '#888' }}>Completed {new Date(cert.earned_at).toLocaleDateString()}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 11, color: '#666' }}>
-                  ID: {cert.certificate_id}
-                </div>
-                <button
-                  onClick={() => downloadCertificate({
-                    studentName: cert.student_name,
-                    courseName: cert.course_name,
-                    completionDate: cert.earned_at,
-                    totalPoints: cert.total_points,
-                    certificateId: cert.certificate_id,
-                  })}
-                  style={{
-                    background: 'linear-gradient(135deg, #FF6B2B, #E85D1A)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: '10px 16px',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  📥 Download Certificate
-                </button>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => shareCertificate({
-                      studentName: cert.student_name,
-                      courseName: cert.course_name,
-                      certificateId: cert.certificate_id,
-                    })}
-                    style={{
-                      flex: 1,
-                      minWidth: 80,
-                      background: 'rgba(255,255,255,0.06)',
-                      color: '#888',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: 6,
-                      padding: '8px 12px',
-                      fontSize: 12,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    📤 Share
-                  </button>
-                  <button
-                    onClick={() => shareOnLinkedIn({
-                      studentName: cert.student_name,
-                      courseName: cert.course_name,
-                      certificateId: cert.certificate_id,
-                    })}
-                    style={{
-                      flex: 1,
-                      minWidth: 80,
-                      background: 'rgba(10,102,194,0.15)',
-                      color: '#0A66C2',
-                      border: '1px solid rgba(10,102,194,0.2)',
-                      borderRadius: 6,
-                      padding: '8px 12px',
-                      fontSize: 12,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    in
-                  </button>
-                  <button
-                    onClick={() => shareOnFacebook({
-                      courseName: cert.course_name,
-                      certificateId: cert.certificate_id,
-                    })}
-                    style={{
-                      flex: 1,
-                      minWidth: 80,
-                      background: 'rgba(24,119,242,0.15)',
-                      color: '#1877F2',
-                      border: '1px solid rgba(24,119,242,0.2)',
-                      borderRadius: 6,
-                      padding: '8px 12px',
-                      fontSize: 12,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    f
-                  </button>
-                </div>
+                {/* Visual certificate model — view only, no download */}
+                <CertificateView
+                  studentName={cert.student_name}
+                  courseName={cert.course_name}
+                  completionDate={cert.earned_at}
+                  totalPoints={cert.total_points}
+                  certificateId={cert.certificate_id}
+                  compact
+                />
               </div>
             ))}
           </div>

@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useSubscription, isModuleGated } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
+import CertificateView, { CertificateBlockedView } from "../components/CertificateView";
 
 const MODULE_ICONS = {
   live: "📡",
@@ -42,6 +43,8 @@ export default function CourseDetailPage() {
   const [enrollCount, setEnrollCount] = useState(0);
   const [busyEnroll, setBusyEnroll] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [certificate, setCertificate] = useState(null);
+  const [certBlock, setCertBlock] = useState(null);
 
   const canManage = isAdmin || isSuperAdmin;
   const isStudent = !canManage && !isTeacher;
@@ -100,6 +103,23 @@ export default function CourseDetailPage() {
         .eq("course_id", courseId)
         .maybeSingle();
       setIsEnrolled(!!myEnroll);
+
+      // Certificate state for this user + course
+      const { data: cert } = await supabase
+        .from("certificates")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .maybeSingle();
+      setCertificate(cert || null);
+
+      const { data: block } = await supabase
+        .from("certificate_blocks")
+        .select("reason")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .maybeSingle();
+      setCertBlock(block || null);
     }
     const { data: countData } = await supabase
       .from("course_enrollments")
@@ -298,6 +318,64 @@ export default function CourseDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Certificate section — visual only, no download */}
+        {isStudent && modules.length > 0 && (() => {
+          const totalTasks = modules.reduce((s, m) => s + m.totalTasks, 0);
+          const doneTasks = modules.reduce((s, m) => s + m.completedCount, 0);
+          const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+          const isComplete = pct === 100;
+          const certDisabled = course?.certificate_enabled === false;
+
+          // Nothing to show: course not complete, no cert earned, nothing blocked
+          if (!certificate && !isComplete && !certBlock) return null;
+          // Admin disabled certificates for this course and none was earned
+          if (!certificate && certDisabled && !certBlock) return null;
+
+          return (
+            <div style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 14, padding: 24, marginBottom: 32 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: 20 }}>🏆</span>
+                <h2 style={{ fontSize: 17, fontWeight: 700, color: t.txt, margin: 0 }}>Course Certificate</h2>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 100,
+                    background: certificate ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.06)",
+                    color: certificate ? "#4ADE80" : t.txtDim,
+                  }}
+                >
+                  {certificate ? "Earned" : isComplete ? "Under review" : `${pct}% to earn`}
+                </span>
+              </div>
+
+              {certificate ? (
+                <>
+                  <CertificateView
+                    studentName={certificate.student_name}
+                    courseName={certificate.course_name}
+                    completionDate={certificate.earned_at}
+                    totalPoints={certificate.total_points}
+                    certificateId={certificate.certificate_id}
+                    compact
+                  />
+                  <p style={{ fontSize: 12, color: t.txtDim, textAlign: "center", marginTop: 12 }}>
+                    🎓 Congratulations! This certificate is displayed for viewing. Ask your administrator for the official copy.
+                  </p>
+                </>
+              ) : certBlock ? (
+                <CertificateBlockedView reason={certBlock.reason} courseName={course?.title} />
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px 0", color: t.txtDim, fontSize: 14 }}>
+                  You've completed all tasks! Your certificate status is being reviewed by the administration.
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {modules.length === 0 ? (
           <div style={{ textAlign: "center", padding: 60, color: t.txtDim }}>
