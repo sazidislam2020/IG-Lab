@@ -18,8 +18,22 @@ export default function Dashboard() {
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [labMode, setLabMode] = useState("free");
 
   const { subscription, isFree, isPaid, loading: subLoading } = useSubscription(user?.id);
+
+  // Robot Lab access mode (set by admin in Site Settings)
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "lab_access_mode")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.setting_value) setLabMode(data.setting_value);
+      })
+      .catch(() => {});
+  }, []);
 
   const roleLabel = isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : isTeacher ? "Teacher" : "Student";
   const roleColor = isSuperAdmin ? "#FF5A1F" : isAdmin ? "#FFB238" : isTeacher ? "#22D3EE" : "#4ADE80";
@@ -286,7 +300,7 @@ export default function Dashboard() {
                 {isStudent && (
                   <>
                     <ActionCard icon="💻" title="Code Sandbox" desc="Write & run code" color="#FF6B2B" t={t} onClick={() => navigate("/sandbox")} />
-                    <ActionCard icon="🤖" title="Robot Sim" desc="3D robot control" color="#22D3EE" t={t} onClick={() => navigate("/simulation")} />
+                    <ActionCard icon="🤖" title="Robot Sim" desc="3D robot control" color="#22D3EE" t={t} onClick={() => navigate("/simulation")} badge={labMode === "paid" && isFree ? "🔒 Paid" : labMode === "restricted" ? "🔒 Staff only" : "✓ Free"} />
                     <ActionCard icon="📡" title="Live Classes" desc="Join a session" color="#F87171" t={t} onClick={() => navigate("/classes")} />
                     <ActionCard icon="📂" title="Projects" desc="Build with any stack" color="#A78BFA" t={t} onClick={() => navigate("/projects")} />
                     <ActionCard icon="🏆" title="Leaderboard" desc="See your rank" color="#FACC15" t={t} onClick={() => navigate("/leaderboard")} />
@@ -503,14 +517,22 @@ function CourseCard({ course, t, onClick, isDark }) {
   );
 }
 
-function ActionCard({ icon, title, desc, color, t, onClick }) {
+function ActionCard({ icon, title, desc, color, t, onClick, badge }) {
+  const badgeStyle = badge?.includes("Paid")
+    ? { background: "rgba(255,178,56,0.15)", color: "#FFB238" }
+    : badge?.includes("Staff")
+    ? { background: "rgba(248,113,113,0.15)", color: "#F87171" }
+    : { background: "rgba(74,222,128,0.15)", color: "#4ADE80" };
   return (
     <div
       onClick={onClick}
-      style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, padding: "16px 16px", cursor: "pointer", transition: "all 0.15s" }}
+      style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, padding: "16px 16px", cursor: "pointer", transition: "all 0.15s", position: "relative" }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.transform = "translateY(-2px)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = "none"; }}
     >
+      {badge && (
+        <span style={{ position: "absolute", top: 10, right: 10, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 20, ...badgeStyle }}>{badge}</span>
+      )}
       <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
       <div style={{ fontSize: 14, fontWeight: 600, color: t.txt, marginBottom: 2 }}>{title}</div>
       <div style={{ fontSize: 12, color: t.txtDim }}>{desc}</div>

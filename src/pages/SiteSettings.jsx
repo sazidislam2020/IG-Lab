@@ -34,6 +34,7 @@ const categories = [
   { key: "footer", label: "Footer", icon: "\uD83D\uDCC4" },
   { key: "theme", label: "Theme / Colors", icon: "\uD83C\uDFA8" },
   { key: "partners", label: "Partners Logos", icon: "\uD83D\uDC65" },
+  { key: "lab", label: "Robot Lab", icon: "\uD83E\uDD16" },
 ];
 
 // ─── Input Components ───────────────────────────────────────────
@@ -65,6 +66,20 @@ function Textarea({ value, onChange }) {
     <textarea value={value || ""} onChange={e => onChange(e.target.value)} rows={3}
       style={{ fontFamily: C.fontBody, fontSize: 14, color: C.txt, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", resize: "vertical", outline: "none", width: "100%", transition: "border-color 0.2s" }}
       onFocus={e => e.target.style.borderColor = C.accent} onBlur={e => e.target.style.borderColor = C.border} />
+  );
+}
+
+function SelectInput({ value, onChange, options }) {
+  const C = useC();
+  const opts = (options || "").split("|").filter(Boolean);
+  const pretty = { free: "Free for all students", paid: "Paid (subscription required)", restricted: "Restricted (teachers & admins only)" };
+  return (
+    <select value={value || ""} onChange={e => onChange(e.target.value)}
+      style={{ fontFamily: C.fontBody, fontSize: 14, color: C.txt, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", outline: "none", cursor: "pointer" }}>
+      {opts.map(o => (
+        <option key={o} value={o} style={{ color: "#111" }}>{pretty[o] || o}</option>
+      ))}
+    </select>
   );
 }
 
@@ -466,6 +481,7 @@ export default function SiteSettings() {
                   <Field key={setting.id} label={setting.label} description={setting.description}>
                     {setting.setting_type === "textarea" ? <Textarea value={editedValues[setting.setting_key] || ""} onChange={v => handleChange(setting.setting_key, v)} />
                       : setting.setting_type === "color" ? <ColorInput value={editedValues[setting.setting_key] || ""} onChange={v => handleChange(setting.setting_key, v)} />
+                      : setting.setting_type === "select" ? <SelectInput value={editedValues[setting.setting_key] || ""} onChange={v => handleChange(setting.setting_key, v)} options={setting.setting_options} />
                       : <TextInput value={editedValues[setting.setting_key] || ""} onChange={v => handleChange(setting.setting_key, v)} />}
                   </Field>
                 ))}

@@ -12,6 +12,10 @@ export default function BottomNav() {
   const hideOn = ["/", "/login", "/signup"];
   if (hideOn.includes(location.pathname)) return null;
 
+  // Hide on PC (wider than 768px) — use CSS media query
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return null;
+
   // Student nav items
   const studentItems = [
     { icon: "🏠", label: "Home", path: "/dashboard" },

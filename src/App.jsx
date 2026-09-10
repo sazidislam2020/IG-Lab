@@ -19,6 +19,7 @@ import StudentProfile from "./pages/StudentProfile";
 import AdminCourses from "./pages/AdminCourses";
 import AuditLog from "./pages/AuditLog";
 import Simulation from "./pages/Simulation";
+import LabGate from "./components/LabGate";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectEditor from "./pages/ProjectEditor";
 import LiveClassesPage from "./pages/LiveClassesPage";
@@ -269,7 +270,9 @@ export default function App() {
             path="/simulation"
             element={
               <ProtectedRoute>
-                <Simulation />
+                <LabGate>
+                  <Simulation />
+                </LabGate>
               </ProtectedRoute>
             }
           />

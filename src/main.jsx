@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
@@ -20,8 +19,10 @@ window.addEventListener("pageshow", (event) => {
   }
 });
 
+// NOTE: StrictMode is intentionally NOT used here. The 3D simulation page
+// (Simulation.jsx) keeps physics singletons at module scope and starts its
+// animation loop in a mount effect; StrictMode's dev double-mount would run
+// two physics loops against the same world and double-apply impulses.
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+  <App />
 );
