@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 
@@ -104,7 +104,7 @@ export default function CreateClass() {
     <div className="create-class-page" style={S.page}>
       <nav style={S.nav}>
         <div style={S.navLeft}>
-          <a href="/classes" style={S.backLink}>← Live Classes</a>
+          <Link to="/classes" style={S.backLink}>← Live Classes</Link>
           <span style={S.brand}>📡 Schedule a Class</span>
         </div>
       </nav>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
@@ -103,7 +103,7 @@ export default function SubmissionReview() {
     <div style={{ minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif", transition: "background 0.3s, color 0.3s" }}>
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: `1px solid ${t.border}`, background: isDark ? "rgba(9,9,11,0.92)" : "rgba(250,250,250,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <a href="/dashboard" style={{ color: t.txtDim, textDecoration: "none", fontSize: 13 }}>← Dashboard</a>
+          <Link to="/dashboard" style={{ color: t.txtDim, textDecoration: "none", fontSize: 13 }}>← Dashboard</Link>
           <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700 }}>📝 Submission Review</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>

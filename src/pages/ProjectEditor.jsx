@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { supabase } from "../lib/supabase";
 import { TEMPLATES, getMonacoLang, buildFileTree } from "../lib/projectTemplates";
@@ -394,7 +394,7 @@ export default function ProjectEditor() {
       {/* Top Bar */}
       <div style={S.topBar}>
         <div style={S.topLeft}>
-          <a href="/projects" style={S.backLink}>← Projects</a>
+          <Link to="/projects" style={S.backLink}>← Projects</Link>
           <span style={S.projectName}>{template?.icon} {project.name}</span>
           <span style={S.stackBadge}>{template?.name || project.stack}</span>
         </div>

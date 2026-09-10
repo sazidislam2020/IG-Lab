@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
@@ -107,7 +107,7 @@ export default function CoursesPage() {
     <div style={S.page}>
       <nav style={S.nav}>
         <div style={S.navLeft}>
-          <a href="/dashboard" style={S.backLink}>← Dashboard</a>
+          <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
           <span style={S.brand}>📚 Courses</span>
         </div>
         {canManage && (

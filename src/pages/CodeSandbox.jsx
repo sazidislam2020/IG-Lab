@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 
 const LANGUAGES = [
@@ -144,7 +145,7 @@ export default function CodeSandbox() {
       {/* Header */}
       <div style={S.header}>
         <div style={S.headerLeft}>
-          <a href="/dashboard" style={S.backLink}>← Dashboard</a>
+          <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
           <span style={S.title}>Code Sandbox</span>
         </div>
         <div style={S.headerRight}>

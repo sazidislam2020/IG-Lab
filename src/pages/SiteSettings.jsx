@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -430,7 +431,7 @@ export default function SiteSettings() {
         {/* Header */}
         <div style={{ borderBottom: `1px solid ${C.border}`, padding: "16px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg === "#FAFAFA" ? "rgba(255,255,255,0.92)" : "rgba(9,9,11,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <a href="/dashboard" style={{ fontFamily: C.fontBody, fontSize: 13, color: C.txtSec, textDecoration: "none" }}>{"\u2190"} Dashboard</a>
+            <Link to="/dashboard" style={{ fontFamily: C.fontBody, fontSize: 13, color: C.txtSec, textDecoration: "none" }}>{"\u2190"} Dashboard</Link>
             <h1 style={{ fontFamily: C.fontDisplay, fontSize: 18, fontWeight: 700 }}>Site Settings</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>

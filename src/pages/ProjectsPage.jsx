@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { TEMPLATES } from "../lib/projectTemplates";
@@ -89,7 +89,7 @@ export default function ProjectsPage() {
     <div style={S.page}>
       <nav style={S.nav}>
         <div style={S.navLeft}>
-          <a href="/dashboard" style={S.backLink}>← Dashboard</a>
+          <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
           <span style={S.brand}>📂 My Projects</span>
         </div>
         <button onClick={() => setShowCreate(true)} style={S.createBtn}>

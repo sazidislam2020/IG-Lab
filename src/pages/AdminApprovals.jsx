@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
@@ -241,7 +241,7 @@ export default function AdminApprovals() {
         )}
 
         <div style={styles.backLink}>
-          <a href="/dashboard" style={styles.link}>← Back to Dashboard</a>
+          <Link to="/dashboard" style={styles.link}>← Back to Dashboard</Link>
         </div>
       </main>
 
