@@ -69,6 +69,7 @@ export default function CreateClass() {
 
     const insertData = {
       host_id: profile.id,
+      host_name: profile.full_name || profile.email || "Instructor",
       title: title.trim(),
       description: description.trim(),
       subject: subject.trim(),

@@ -41,36 +41,15 @@ export default function Leaderboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // Get all approved students
-      const { data: allStudents } = await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .eq('role', 'student')
-        .eq('status', 'approved');
-
-      if (!allStudents) { setLoading(false); return; }
-
-      // Get points for each student
-      const enriched = await Promise.all(
-        allStudents.map(async (s) => {
-          const { data: points } = await supabase
-            .from('points_ledger')
-            .select('points')
-            .eq('user_id', s.id);
-          const totalPoints = (points || []).reduce((sum, p) => sum + p.points, 0);
-
-          const { count: passedCount } = await supabase
-            .from('submissions')
-            .select('id', { count: 'exact' })
-            .eq('user_id', s.id)
-            .eq('passed', true);
-
-          return { ...s, totalPoints, passedCount: passedCount || 0 };
-        })
-      );
-
-      // Sort by points descending
-      enriched.sort((a, b) => b.totalPoints - a.totalPoints || b.passedCount - a.passedCount);
+      // Server-side aggregate: names + totals without exposing
+      // profiles emails or raw points_ledger rows to students.
+      const { data: board } = await supabase.rpc('get_leaderboard', { p_limit: 500 });
+      const enriched = (board || []).map((r) => ({
+        id: r.user_id,
+        full_name: r.display_name,
+        totalPoints: Number(r.total_points),
+        passedCount: Number(r.tasks_passed),
+      }));
       setStudents(enriched);
       setLoading(false);
     }
@@ -126,7 +105,6 @@ export default function Leaderboard() {
                   <span style={{ ...S.rankNum, color: isMe ? '#f97316' : '#888' }}>{i + 4}</span>
                   <div>
                     <div style={S.studentName}>{s.full_name || 'No name'}{isMe ? ' (you)' : ''}</div>
-                    <div style={S.studentEmail}>{s.email}</div>
                   </div>
                   <span style={S.pointsVal}>{s.totalPoints}</span>
                   <span style={S.tasksVal}>{s.passedCount}</span>

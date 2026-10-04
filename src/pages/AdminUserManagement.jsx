@@ -11,7 +11,6 @@ export default function AdminUserManagement() {
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
   const [showModal, setShowModal] = useState(null);
-  const [newPassword, setNewPassword] = useState("");
 
   useEffect(() => {
     fetchUsers();
@@ -53,13 +52,17 @@ export default function AdminUserManagement() {
 
   async function resetPassword(userId, email) {
     setActionLoading(userId);
-    const { error } = await supabase.auth.admin.resetUserPassword(userId, newPassword);
+    // The admin API needs the service_role key (never shipped to the
+    // browser), so we trigger Supabase's secure password-reset email
+    // instead — the user sets their own new password via the link.
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
     if (error) {
       alert("Error: " + error.message);
     } else {
-      alert("Password reset successfully!");
+      alert(`Password reset email sent to ${email}.`);
       setShowModal(null);
-      setNewPassword("");
     }
     setActionLoading(null);
   }
@@ -252,25 +255,18 @@ export default function AdminUserManagement() {
           <div style={modalStyle(t)} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: t.txt }}>Reset Password</h3>
             <p style={{ fontSize: 13, color: t.txtDim, marginBottom: 16 }}>
-              Set a new password for <strong>{showModal.user.email}</strong>
+              Send a secure password-reset link to <strong>{showModal.user.email}</strong>. The user sets their own new password from the email.
             </p>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="New password (min 6 characters)"
-              style={{ width: "100%", background: t.bg, border: `1px solid ${t.border}`, borderRadius: 8, padding: "10px 14px", fontSize: 14, color: t.txt, outline: "none", marginBottom: 16 }}
-            />
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
               <button onClick={() => setShowModal(null)} style={{ background: "transparent", border: `1px solid ${t.border}`, color: t.txtDim, padding: "8px 16px", borderRadius: 8, fontSize: 13, cursor: "pointer" }}>
                 Cancel
               </button>
               <button
                 onClick={() => resetPassword(showModal.user.id, showModal.user.email)}
-                disabled={newPassword.length < 6 || actionLoading === showModal.user.id}
-                style={{ background: "#38BDF8", color: "#000", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: newPassword.length < 6 ? 0.5 : 1 }}
+                disabled={actionLoading === showModal.user.id}
+                style={{ background: "#38BDF8", color: "#000", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
-                {actionLoading === showModal.user.id ? "Resetting..." : "Reset Password"}
+                {actionLoading === showModal.user.id ? "Sending..." : "Send Reset Email"}
               </button>
             </div>
           </div>

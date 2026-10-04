@@ -34,10 +34,29 @@ export default function LiveClassRoom() {
     }
   }, [joined]);
 
+  async function fetchAttendees() {
+    const { data } = await supabase
+      .from("class_attendance")
+      .select("*")
+      .eq("class_id", classId);
+    const rows = data || [];
+    const ids = [...new Set(rows.map((r) => r.user_id))];
+    let dir = [];
+    if (ids.length) {
+      const { data: d } = await supabase
+        .from("profile_public")
+        .select("id, full_name")
+        .in("id", ids);
+      dir = d || [];
+    }
+    const map = Object.fromEntries(dir.map((p) => [p.id, p.full_name]));
+    return rows.map((r) => ({ ...r, display_name: map[r.user_id] || "?" }));
+  }
+
   async function loadClass() {
     const { data, error } = await supabase
       .from("live_classes")
-      .select("*, profiles:host_id(email, full_name)")
+      .select("*, host_name")
       .eq("id", classId)
       .single();
 
@@ -48,12 +67,7 @@ export default function LiveClassRoom() {
     }
 
     setCls(data);
-
-    const { data: attData } = await supabase
-      .from("class_attendance")
-      .select("*, profiles:user_id(email, full_name)")
-      .eq("class_id", classId);
-    setAttendees(attData || []);
+    setAttendees(await fetchAttendees());
 
     setLoading(false);
   }
@@ -84,11 +98,7 @@ export default function LiveClassRoom() {
   }
 
   async function refreshAttendees() {
-    const { data } = await supabase
-      .from("class_attendance")
-      .select("*, profiles:user_id(email, full_name)")
-      .eq("class_id", classId);
-    setAttendees(data || []);
+    setAttendees(await fetchAttendees());
   }
 
   async function leaveClass() {
@@ -173,7 +183,7 @@ export default function LiveClassRoom() {
             <div style={S.lobbyMeta}>
               <div style={S.lobbyMetaItem}>
                 <span style={{ color: "#5C6478" }}>Host</span>
-                <span>{cls.profiles?.full_name || cls.profiles?.email}</span>
+                <span>{cls.host_name || cls.title}</span>
               </div>
               <div style={S.lobbyMetaItem}>
                 <span style={{ color: "#5C6478" }}>Scheduled</span>
@@ -262,10 +272,10 @@ export default function LiveClassRoom() {
           <div style={S.participantList}>
             {attendees.map((att) => (
               <div key={att.id} style={S.participant}>
-                <div style={S.avatar}>{(att.profiles?.full_name || att.profiles?.email || "?")[0].toUpperCase()}</div>
+                <div style={S.avatar}>{(att.display_name || "?")[0].toUpperCase()}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>
-                    {att.profiles?.full_name || att.profiles?.email}
+                    {att.display_name || "?"}
                     {att.user_id === cls.host_id && (
                       <span style={S.hostTag}>HOST</span>
                     )}

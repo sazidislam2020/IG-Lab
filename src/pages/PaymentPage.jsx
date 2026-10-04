@@ -57,56 +57,17 @@ export default function PaymentPage() {
     // Simulate processing delay (demo payment)
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Create payment record
-    const amount = parseFloat(selectedPlan.price.replace(/[^0-9.]/g, "")) || 500;
-    const txnId = `DEMO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
-    const { data: payment, error: payErr } = await supabase
-      .from("payments")
-      .insert({
-        user_id: user.id,
-        plan_name: selectedPlan.name,
-        amount,
-        currency: "BDT",
-        payment_method: paymentMethod,
-        transaction_id: txnId,
-        status: "completed",
-        paid_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+    // Server-side checkout (SECURITY DEFINER RPC): validates the plan
+    // against site_pricing_plans, prices it server-side, cancels old
+    // plans, and records the payment + subscription atomically.
+    // Direct client writes to payments/user_subscriptions are blocked by RLS.
+    const { error: payErr } = await supabase.rpc("activate_demo_subscription", {
+      p_plan_name: selectedPlan.name,
+      p_payment_method: paymentMethod,
+    });
 
     if (payErr) {
-      setError("Payment failed. Please try again.");
-      setProcessing(false);
-      return;
-    }
-
-    // Create subscription (30 days for monthly plans)
-    const isMonthly = selectedPlan.period?.includes("month");
-    const expiresAt = isMonthly
-      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      : null;
-
-    // Deactivate old subscriptions
-    await supabase
-      .from("user_subscriptions")
-      .update({ status: "cancelled" })
-      .eq("user_id", user.id)
-      .eq("status", "active");
-
-    // Create new subscription
-    const { error: subErr } = await supabase
-      .from("user_subscriptions")
-      .insert({
-        user_id: user.id,
-        plan_name: selectedPlan.name,
-        status: "active",
-        expires_at: expiresAt,
-      });
-
-    if (subErr) {
-      setError("Payment recorded but subscription activation failed. Contact support.");
+      setError(payErr.message || "Payment failed. Please try again.");
       setProcessing(false);
       return;
     }

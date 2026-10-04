@@ -128,32 +128,18 @@ export default function Dashboard() {
     setCourses(courseProgress);
     const coursesEnrolled = courseProgress.length;
 
-    // 4. Leaderboard rank
-    const { data: allStudents } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("role", "student")
-      .eq("status", "approved");
-
-    const ranked = [];
-    for (const s of allStudents || []) {
-      const { data: pts } = await supabase
-        .from("points_ledger")
-        .select("points")
-        .eq("user_id", s.id);
-      const total = (pts || []).reduce((sum, p) => sum + p.points, 0);
-      ranked.push({ id: s.id, total });
-    }
-    ranked.sort((a, b) => b.total - a.total);
+    // 4/5. Leaderboard rank + top performers — server-side aggregate RPC
+    //      (avoids reading every profile and every student's points)
+    const { data: board } = await supabase.rpc("get_leaderboard", { p_limit: 500 });
+    const ranked = (board || []).map((r) => ({ id: r.user_id, total: Number(r.total_points) }));
     const rank = ranked.findIndex((s) => s.id === user.id) + 1;
 
-    // 5. Top 3 leaderboard
     setTopStudents(ranked.slice(0, 5).map((s, i) => ({ ...s, rank: i + 1 })));
 
     // 6. Upcoming live classes (future scheduled OR currently marked live)
     const { data: classes } = await supabase
       .from("live_classes")
-      .select("id, title, scheduled_at, status, subject, profiles!live_classes_host_id_fkey(email, full_name)")
+      .select("id, title, scheduled_at, status, subject, host_name")
       .or(`scheduled_at.gte.${new Date().toISOString()},status.eq.live`)
       .order("scheduled_at", { ascending: true })
       .limit(3);
@@ -421,7 +407,7 @@ export default function Dashboard() {
                         <div style={{ fontSize: 14, fontWeight: 600, color: t.txt, marginBottom: 4 }}>{cls.title}</div>
                         <div style={{ fontSize: 12, color: t.txtDim, display: "flex", gap: 8 }}>
                           {cls.subject && <span>{cls.subject}</span>}
-                          <span>{cls.profiles?.full_name || cls.profiles?.email || "Instructor"}</span>
+                          <span>{cls.host_name || "Instructor"}</span>
                           {cls.status === "live" ? (
                             <span style={{ color: "#F87171", fontWeight: 700 }}>● LIVE NOW</span>
                           ) : (

@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user.id, session.user.email);
       } else {
         setLoading(false);
       }
@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user.id, session.user.email);
       } else {
         setProfile(null);
         setLoading(false);
@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchProfile(userId) {
+  async function fetchProfile(userId, email) {
     console.log("Fetching profile for user:", userId);
     const { data, error } = await supabase
       .from("profiles")
@@ -48,12 +48,14 @@ export function AuthProvider({ children }) {
 
     if (error) {
       console.error("Error fetching profile:", error.message, error);
-      // If profile doesn't exist, try to create it
+      // If profile doesn't exist, try to create it (fallback only — the
+      // handle_new_user trigger normally creates the row). RLS only allows
+      // inserting yourself as an unapproved student.
       if (error.code === "PGRST116" || error.message?.includes("0 rows")) {
         console.log("Profile not found, attempting to create...");
         const { error: insertError } = await supabase
           .from("profiles")
-          .insert({ id: userId, email: user?.email, role: "student", status: "pending" });
+          .insert({ id: userId, email, role: "student", status: "pending" });
         if (insertError) {
           console.error("Failed to create profile:", insertError.message);
         } else {

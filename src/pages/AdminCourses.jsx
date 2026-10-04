@@ -190,7 +190,13 @@ export default function AdminCourses() {
     } else if (type === 'module') {
       setForm(item ? { title: item.title, module_type: item.module_type, description: item.description || '', module_order: item.module_order, points_value: item.points_value, is_free: item.is_free } : { title: '', module_type: 'classwork', description: '', module_order: modules.length, points_value: 100, is_free: false });
     } else if (type === 'task') {
-      setForm(item ? { title: item.title, prompt: item.prompt, language: item.language, starter_code: item.starter_code || '', expected_output: item.expected_output || '', points_value: item.points_value } : { title: '', prompt: '', language: 'python', starter_code: '', expected_output: '', points_value: 10 });
+      // Edit is opened with a module_tasks row (task data nested under .tasks)
+      const t = item?.tasks || item;
+      if (t && (t.title || t.prompt)) {
+        setForm({ title: t.title || '', prompt: t.prompt || '', language: t.language || 'python', starter_code: t.starter_code || '', expected_output: t.expected_output || '', points_value: t.points_value ?? 10 });
+      } else {
+        setForm({ title: '', prompt: '', language: 'python', starter_code: '', expected_output: '', points_value: 10 });
+      }
     }
   }
 
@@ -228,7 +234,7 @@ export default function AdminCourses() {
 
   async function saveTask() {
     if (!form.title || !form.prompt) return;
-    // First save the task itself
+    // Save the task itself
     const taskData = { title: form.title, prompt: form.prompt, language: form.language, starter_code: form.starter_code, expected_output: form.expected_output || null, points_value: parseInt(form.points_value) };
     let taskId;
     if (editingItem) {
@@ -236,9 +242,11 @@ export default function AdminCourses() {
       taskId = editingItem.task_id || editingItem.id;
     } else {
       const { data: newTask } = await supabase.from('tasks').insert(taskData).select().single();
-      taskId = newTask.id;
+      taskId = newTask?.id;
       // Link to module
-      await supabase.from('module_tasks').insert({ module_id: selectedModule.id, task_id: taskId, task_order: tasks.length });
+      if (taskId) {
+        await supabase.from('module_tasks').insert({ module_id: selectedModule.id, task_id: taskId, task_order: tasks.length });
+      }
     }
     closeModal(); fetchTasks(selectedModule.id);
   }

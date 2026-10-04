@@ -23,7 +23,7 @@ export default function LiveClassesPage() {
     setLoading(true);
     const { data } = await supabase
       .from("live_classes")
-      .select("*, profiles:host_id(email, full_name)")
+      .select("*, host_name")
       .order("scheduled_at", { ascending: filter === "ended" ? false : true });
     setClasses(data || []);
     setLoading(false);
@@ -154,7 +154,7 @@ export default function LiveClassesPage() {
                     <p style={S.cardDesc}>{cls.description}</p>
                   )}
                   <div style={S.cardMeta}>
-                    <span style={S.metaItem}>👤 {cls.profiles?.full_name || cls.profiles?.email || "Unknown"}</span>
+                    <span style={S.metaItem}>👤 {cls.host_name || "Unknown"}</span>
                     <span style={S.metaItem}>🕐 {formatDateTime(cls.scheduled_at)}</span>
                     <span style={S.metaItem}>⏱ {cls.duration_min} min</span>
                     {cls.subject && <span style={S.metaItem}>📖 {cls.subject}</span>}

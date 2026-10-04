@@ -159,12 +159,10 @@ export default function TaskPage() {
       }
     }
 
-    // Check if passed
-    const passed = task.expected_output
-      ? outputText.trim().includes(task.expected_output.trim())
-      : outputText.length > 0 && !outputText.startsWith('Error') && !outputText.startsWith('❌');
-
-    // Save submission (unique task_id + user_id — second attempt fails here)
+    // Save submission (unique task_id + user_id — second attempt fails here).
+    // SECURITY: the server grades it — passed/points are recomputed in a
+    // BEFORE INSERT trigger from the task's expected output, and points are
+    // awarded server-side, so nothing here can be forged by the client.
     const { data: sub, error: subErr } = await supabase
       .from('submissions')
       .insert({
@@ -173,9 +171,6 @@ export default function TaskPage() {
         code,
         language: task.language,
         output: outputText,
-        passed,
-        points_awarded: passed ? task.points_value : 0,
-        graded_by: 'auto',
       })
       .select()
       .single();
@@ -190,16 +185,8 @@ export default function TaskPage() {
     // Lock further attempts immediately
     setExistingSubmission(sub);
 
-    // Award points if passed
-    if (passed && sub) {
-      await supabase.from('points_ledger').insert({
-        user_id: user.id,
-        submission_id: sub.id,
-        points: task.points_value,
-        reason: 'task_passed',
-      });
-    }
-
+    // Server-returned grade (points were awarded by the server trigger)
+    const passed = !!sub.passed;
     setSubmitResult(passed ? 'passed' : 'failed');
     setRightTab('output');
 
