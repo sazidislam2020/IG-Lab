@@ -30,7 +30,7 @@ export function getWorld() {
 /**
  * Step the physics simulation
  */
-export function stepPhysics(dt = 1 / 60) {
+export function stepPhysics(_dt = 1 / 60) {
   if (world) {
     world.step();
   }

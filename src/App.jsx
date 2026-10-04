@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import AdminApprovals from "./pages/AdminApprovals";
 import CodeSandbox from "./pages/CodeSandbox";
@@ -43,6 +44,8 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          {/* Password-reset link target (recovery session, not gated) */}
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected routes - any authenticated, approved user */}
           <Route

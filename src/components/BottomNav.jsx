@@ -5,11 +5,11 @@ import { useTheme } from "../contexts/ThemeContext";
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isStudent, isTeacher, isAdmin, isSuperAdmin } = useAuth();
+  const { isTeacher, isAdmin, isSuperAdmin } = useAuth();
   const { colors: t } = useTheme();
 
-  // Don't show on landing, login, signup pages
-  const hideOn = ["/", "/login", "/signup"];
+  // Don't show on landing, login, signup, password-reset pages
+  const hideOn = ["/", "/login", "/signup", "/reset-password"];
   if (hideOn.includes(location.pathname)) return null;
 
   // Hide on PC (wider than 768px) — use CSS media query
@@ -43,7 +43,10 @@ export default function BottomNav() {
     { icon: "👤", label: "Profile", path: "/profile" },
   ];
 
-  const items = isStudent ? studentItems : isTeacher ? teacherItems : adminItems;
+  // Role-aware: admin tools ONLY for explicit admins — if the profile
+  // hasn't loaded yet (or the fetch failed), default to the student nav
+  // instead of leaking admin buttons to everyone.
+  const items = isAdmin || isSuperAdmin ? adminItems : isTeacher ? teacherItems : studentItems;
 
   return (
     <nav style={styles.nav}>

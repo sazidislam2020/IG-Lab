@@ -169,7 +169,7 @@ function createCrabClaw() {
 
 /* ── Main Robot Builder ────────────────────────────────── */
 
-export function createRobotArm(scene) {
+export function createRobotArm(_scene) {
   const group = new THREE.Group();
   const joints = [];
   const jointData = [];

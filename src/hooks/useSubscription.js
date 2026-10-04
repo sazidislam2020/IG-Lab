@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 
 /**
@@ -16,15 +16,7 @@ export function useSubscription(userId) {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-    fetchSubscription();
-  }, [userId]);
-
-  async function fetchSubscription() {
+  const fetchSubscription = useCallback(async () => {
     setLoading(true);
 
     // Get the most recent active subscription (or lifetime free)
@@ -56,7 +48,15 @@ export function useSubscription(userId) {
     }
 
     setLoading(false);
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    fetchSubscription();
+  }, [userId, fetchSubscription]);
 
   const isFree = !subscription || subscription.plan_name === "Explorer";
   const isPaid = subscription && subscription.plan_name !== "Explorer";

@@ -163,7 +163,7 @@ export function generateCertificateId(studentId, courseId) {
 /**
  * Share certificate on social media
  */
-export function shareCertificate({ studentName, courseName, certificateId }) {
+export function shareCertificate({ courseName, certificateId }) {
   const text = `🎓 I just completed "${courseName}" on Ignite Lab!\n\nCertificate ID: ${certificateId}\n\n#IgniteLab #RoboticsEducation #Completed`;
   const url = `https://ig-lab-phi.vercel.app/`;
 
@@ -184,7 +184,7 @@ export function shareCertificate({ studentName, courseName, certificateId }) {
 /**
  * Share certificate on LinkedIn
  */
-export function shareOnLinkedIn({ studentName, courseName, certificateId }) {
+export function shareOnLinkedIn({ courseName, certificateId }) {
   const text = `🎓 I just completed "${courseName}" on Ignite Lab!\n\nCertificate ID: ${certificateId}`;
   const url = `https://ig-lab-phi.vercel.app/`;
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`;
@@ -194,7 +194,7 @@ export function shareOnLinkedIn({ studentName, courseName, certificateId }) {
 /**
  * Share certificate on Facebook
  */
-export function shareOnFacebook({ courseName, certificateId }) {
+export function shareOnFacebook({ courseName }) {
   const url = `https://ig-lab-phi.vercel.app/`;
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(`🎓 I just completed "${courseName}" on Ignite Lab!`)}`;
   window.open(fbUrl, "_blank");
@@ -203,7 +203,7 @@ export function shareOnFacebook({ courseName, certificateId }) {
 /**
  * Copy certificate link to clipboard
  */
-export async function copyCertificateLink({ certificateId }) {
+export async function copyCertificateLink() {
   const url = `https://ig-lab-phi.vercel.app/`;
   try {
     await navigator.clipboard.writeText(url);

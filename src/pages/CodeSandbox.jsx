@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
+import { supabase } from "../lib/supabase";
 
 const LANGUAGES = [
   { id: "javascript", label: "JavaScript", monaco: "javascript" },
@@ -29,6 +30,7 @@ export default function CodeSandbox() {
   const [code, setCode] = useState(STARTER_CODE.javascript);
   const [output, setOutput] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [runs, setRuns] = useState(null); // server-side run allowance
 
   function handleLanguageChange(langId) {
     setLanguage(langId);
@@ -37,6 +39,29 @@ export default function CodeSandbox() {
   }
 
   async function runCode() {
+    // Free plan includes 3 sandbox runs/day (HTML/CSS live preview is free).
+    // The server RPC counts today's runs and only allows execution when
+    // under the limit; paid plans and staff are unlimited. Fail-closed.
+    if (language !== "html" && language !== "css") {
+      const { data: gate, error: gateErr } = await supabase.rpc("register_sandbox_run");
+      if (gateErr || !gate) {
+        setOutput([
+          "❌ Could not verify your run allowance.",
+          gateErr?.message || "Network error — please try again.",
+        ]);
+        return;
+      }
+      setRuns(gate);
+      if (!gate.allowed) {
+        setOutput([
+          "🔒 Daily free limit reached (3 runs/day).",
+          "Your allowance resets at midnight (UTC).",
+          "Upgrade to a paid plan for unlimited runs → /payment",
+        ]);
+        return;
+      }
+    }
+
     setIsRunning(true);
     setOutput([]);
 
@@ -158,6 +183,11 @@ export default function CodeSandbox() {
               <option key={l.id} value={l.id}>{l.label}</option>
             ))}
           </select>
+          {runs && language !== "html" && language !== "css" && (
+            <span style={S.runsBadge}>
+              {runs.unlimited ? "∞ runs" : `${runs.remaining}/${runs.limit} runs`}
+            </span>
+          )}
           <button onClick={runCode} disabled={isRunning} style={S.runBtn}>
             {isRunning ? "Running..." : "▶ Run"}
           </button>
@@ -244,6 +274,7 @@ const S = {
   title: {fontFamily:"'Space Grotesk',sans-serif",fontSize:16,fontWeight:600},
   select: {background:BG2,border:"1px solid "+LINE2,borderRadius:6,padding:"7px 12px",fontSize:13,color:TXT,cursor:"pointer"},
   runBtn: {background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,fontWeight:700,cursor:"pointer",transition:"transform 0.15s"},
+  runsBadge: {fontSize:11,fontWeight:700,color:DIM,background:"rgba(255,255,255,0.06)",border:"1px solid "+LINE2,borderRadius:20,padding:"5px 10px",whiteSpace:"nowrap"},
   split: {flex:1,display:"flex",overflow:"hidden"},
   editorWrap: {flex:1,display:"flex",flexDirection:"column",borderRight:"1px solid "+LINE},
   editor: {flex:1,overflow:"hidden"},

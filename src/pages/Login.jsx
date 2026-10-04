@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { supabase } from "../lib/supabase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
   const { signIn } = useAuth();
   const { colors: t } = useTheme();
   const styles = makeStyles(t);
@@ -25,6 +28,26 @@ export default function Login() {
       setError(err.message || "Failed to sign in");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    setError("");
+    setResetSent(false);
+    if (!email || !email.includes("@")) {
+      setError("Enter your email address above first, then click Forgot password.");
+      return;
+    }
+    setResetBusy(true);
+    // Sends a secure reset link — the user sets their own new password.
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetBusy(false);
+    if (resetErr) {
+      setError(resetErr.message || "Could not send the reset email");
+    } else {
+      setResetSent(true);
     }
   }
 
@@ -64,6 +87,20 @@ export default function Login() {
               style={styles.input}
               placeholder="••••••••"
             />
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={resetBusy}
+              style={styles.forgotBtn}
+            >
+              {resetBusy ? "Sending..." : "Forgot password?"}
+            </button>
+            {resetSent && (
+              <div style={styles.resetSent}>
+                ✅ If an account exists for <strong>{email}</strong>, a reset
+                link is on its way. Check your inbox (and spam folder).
+              </div>
+            )}
           </div>
 
           <button
@@ -190,6 +227,26 @@ const makeStyles = (t) => ({
     color: t.txtSec,
     fontSize: 14,
     marginTop: 24,
+  },
+  forgotBtn: {
+    alignSelf: "flex-end",
+    background: "none",
+    border: "none",
+    color: "#FF6B2B",
+    fontSize: 12.5,
+    fontWeight: 500,
+    cursor: "pointer",
+    padding: "4px 0 0",
+  },
+  resetSent: {
+    background: "rgba(62,207,142,0.1)",
+    border: "1px solid rgba(62,207,142,0.3)",
+    color: "#6EE7B7",
+    padding: "10px 14px",
+    borderRadius: 8,
+    fontSize: 13,
+    lineHeight: 1.5,
+    marginTop: 8,
   },
   link: {
     color: "#FF6B2B",

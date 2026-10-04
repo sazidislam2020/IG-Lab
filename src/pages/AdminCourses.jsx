@@ -68,6 +68,13 @@ export default function AdminCourses() {
   const [certStudents, setCertStudents] = useState([]); // enrollment rows + status
   const [certLoading, setCertLoading] = useState(false);
 
+  // Teacher assignment (roster-based access)
+  const [teachCourse, setTeachCourse] = useState(null);
+  const [teachAssigned, setTeachAssigned] = useState([]);
+  const [teachCandidates, setTeachCandidates] = useState([]);
+  const [teachLoading, setTeachLoading] = useState(false);
+  const [teachPick, setTeachPick] = useState("");
+
   // Form state
   const [form, setForm] = useState({});
 
@@ -95,6 +102,7 @@ export default function AdminCourses() {
   }
 
   async function openCertManager(course) {
+    setTeachCourse(null);
     setCertCourse(course);
     setCertLoading(true);
     // Enrolled students
@@ -121,6 +129,50 @@ export default function AdminCourses() {
     }));
     setCertStudents(rows);
     setCertLoading(false);
+  }
+
+  async function openTeacherManager(course) {
+    setCertCourse(null);
+    setTeachCourse(course);
+    setTeachLoading(true);
+    setTeachPick("");
+    // Teachers assigned to this course
+    const { data: rows } = await supabase
+      .from('course_teachers')
+      .select('id, teacher_id, profiles(full_name, email)')
+      .eq('course_id', course.id);
+    const assigned = (rows || []).map(r => ({
+      id: r.id,
+      teacher_id: r.teacher_id,
+      full_name: r.profiles?.full_name || '',
+      email: r.profiles?.email || '',
+    }));
+    setTeachAssigned(assigned);
+    // Approved teachers not yet assigned to this course
+    const { data: allTeachers } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .eq('role', 'teacher')
+      .eq('status', 'approved');
+    const assignedIds = new Set(assigned.map(a => a.teacher_id));
+    setTeachCandidates((allTeachers || []).filter(tc => !assignedIds.has(tc.id)));
+    setTeachLoading(false);
+  }
+
+  async function assignTeacher() {
+    if (!teachPick || !teachCourse) return;
+    await supabase.from('course_teachers').insert({
+      course_id: teachCourse.id,
+      teacher_id: teachPick,
+      assigned_by: profile?.id || null,
+    });
+    openTeacherManager(teachCourse);
+  }
+
+  async function unassignTeacher(rowId) {
+    if (!window.confirm('Remove this teacher from the course?')) return;
+    await supabase.from('course_teachers').delete().eq('id', rowId);
+    openTeacherManager(teachCourse);
   }
 
   async function blockStudentCertificate(userId, name) {
@@ -327,6 +379,7 @@ export default function AdminCourses() {
                         {course.certificate_enabled === false ? '🚫 No Cert' : '🎓 Certificate'}
                       </button>
                       <button onClick={() => openCertManager(course)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>🎓 Certs</button>
+                      <button onClick={() => openTeacherManager(course)} style={{ ...S.btnSmall, background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>👩‍🏫 Teachers</button>
                       <button onClick={() => { setSelectedCourse(course); fetchModules(course.id); }} style={{ ...S.btnSmall, background: 'rgba(62,207,142,0.12)', color: '#3ECF8E' }}>Open →</button>
                       <button onClick={() => openModal('course', course)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' }}>Edit</button>
                       <button onClick={() => deleteItem('courses', course.id, fetchCourses)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Delete</button>
@@ -396,6 +449,58 @@ export default function AdminCourses() {
                         <button onClick={() => revokeCertificate(st.cert)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>Revoke</button>
                       )}
                     </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Teacher Assignment (roster-based access) */}
+        {teachCourse && (
+          <div>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <button onClick={() => setTeachCourse(null)} style={S.btnGhost}>← Back to Courses</button>
+                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>👩‍🏫 Teachers — {teachCourse.title}</span>
+              </div>
+            </div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+              Assigned teachers only see the submissions, points, and progress of students in
+              this course. Admins always keep full access.
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+              <select
+                value={teachPick}
+                onChange={e => setTeachPick(e.target.value)}
+                style={{ background: '#0F1420', border: '1px solid rgba(255,255,255,0.16)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#e0e0e0', minWidth: 240 }}
+              >
+                <option value="">{teachCandidates.length ? 'Select a teacher…' : 'No more teachers available'}</option>
+                {teachCandidates.map(tc => (
+                  <option key={tc.id} value={tc.id}>{tc.full_name || tc.email}</option>
+                ))}
+              </select>
+              <button
+                onClick={assignTeacher}
+                disabled={!teachPick}
+                style={{ ...S.btnSmall, background: 'rgba(34,211,238,0.15)', color: '#22D3EE', opacity: teachPick ? 1 : 0.5, padding: '9px 18px' }}
+              >
+                + Assign
+              </button>
+            </div>
+            {teachLoading ? (
+              <div style={S.loading}>Loading teachers...</div>
+            ) : teachAssigned.length === 0 ? (
+              <div style={S.empty}>No teachers assigned yet. A teacher can only see this course's students after being assigned here.</div>
+            ) : (
+              teachAssigned.map(row => (
+                <div key={row.id} style={{ ...S.card, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{row.full_name || 'Teacher'}</div>
+                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{row.email}</div>
+                    </div>
+                    <button onClick={() => unassignTeacher(row.id)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Remove</button>
                   </div>
                 </div>
               ))

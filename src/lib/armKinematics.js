@@ -75,7 +75,7 @@ export function fkWrist(angles) {
   const j1 = rad(angles[1] || 0);
   const j2 = rad(angles[2] || 0);
   const j3 = rad(angles[3] || 0);
-  const j4 = rad(angles[4] || 0);
+  const _j4 = rad(angles[4] || 0); // wrist roll doesn't affect position
 
   const t2 = -j2;
   const t3 = -(j2 + j3);
