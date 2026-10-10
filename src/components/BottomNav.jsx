@@ -1,12 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import Icon from "./Icon";
 
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isTeacher, isAdmin, isSuperAdmin } = useAuth();
   const { colors: t } = useTheme();
+  const styles = makeStyles(t);
 
   // Don't show on landing, login, signup, password-reset pages
   const hideOn = ["/", "/login", "/signup", "/reset-password"];
@@ -16,31 +18,29 @@ export default function BottomNav() {
   const isMobile = window.innerWidth <= 768;
   if (!isMobile) return null;
 
-  // Student nav items
+  // Role nav items — SVG icons (no emoji chrome; renders identically on every OS)
   const studentItems = [
-    { icon: "🏠", label: "Home", path: "/dashboard" },
-    { icon: "📚", label: "Courses", path: "/courses" },
-    { icon: "💻", label: "Code", path: "/sandbox" },
-    { icon: "📡", label: "Live", path: "/classes" },
-    { icon: "👤", label: "Profile", path: "/profile" },
+    { icon: "home", label: "Home", path: "/dashboard" },
+    { icon: "book", label: "Courses", path: "/courses" },
+    { icon: "code", label: "Code", path: "/sandbox" },
+    { icon: "video", label: "Live", path: "/classes" },
+    { icon: "user", label: "Profile", path: "/profile" },
   ];
 
-  // Teacher nav items
   const teacherItems = [
-    { icon: "🏠", label: "Home", path: "/dashboard" },
-    { icon: "👥", label: "Students", path: "/teacher" },
-    { icon: "📡", label: "Live", path: "/classes" },
-    { icon: "📝", label: "Review", path: "/teacher/review" },
-    { icon: "👤", label: "Profile", path: "/profile" },
+    { icon: "home", label: "Home", path: "/dashboard" },
+    { icon: "users", label: "Students", path: "/teacher" },
+    { icon: "video", label: "Live", path: "/classes" },
+    { icon: "check", label: "Review", path: "/teacher/review" },
+    { icon: "user", label: "Profile", path: "/profile" },
   ];
 
-  // Admin nav items
   const adminItems = [
-    { icon: "🏠", label: "Home", path: "/dashboard" },
-    { icon: "🔐", label: "Approve", path: "/admin/approvals" },
-    { icon: "📡", label: "Live", path: "/classes" },
-    { icon: "🎨", label: "Settings", path: "/admin/site-settings" },
-    { icon: "👤", label: "Profile", path: "/profile" },
+    { icon: "home", label: "Home", path: "/dashboard" },
+    { icon: "shield", label: "Approve", path: "/admin/approvals" },
+    { icon: "video", label: "Live", path: "/classes" },
+    { icon: "settings", label: "Settings", path: "/admin/site-settings" },
+    { icon: "user", label: "Profile", path: "/profile" },
   ];
 
   // Role-aware: admin tools ONLY for explicit admins — if the profile
@@ -57,16 +57,18 @@ export default function BottomNav() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
+            aria-label={item.label}
+            aria-current={isActive ? "page" : undefined}
             style={{
               ...styles.item,
-              color: isActive ? "#FF6B2B" : t.txtDim,
+              color: isActive ? t.accentLink : t.txtDim,
             }}
           >
             <span style={{
               ...styles.icon,
               background: isActive ? "rgba(255,107,43,0.12)" : "transparent",
             }}>
-              {item.icon}
+              <Icon name={item.icon} size={19} strokeWidth={isActive ? 2.2 : 1.8} />
             </span>
             <span style={styles.label}>{item.label}</span>
           </button>
@@ -76,17 +78,17 @@ export default function BottomNav() {
   );
 }
 
-const styles = {
+const makeStyles = (t) => ({
   nav: {
     position: "fixed",
     bottom: 0,
     left: 0,
     right: 0,
     height: 64,
-    background: "rgba(15,20,32,0.98)",
+    background: t.bg,
     backdropFilter: "blur(20px)",
     WebkitBackdropFilter: "blur(20px)",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
+    borderTop: `1px solid ${t.border}`,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-around",
@@ -111,7 +113,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: 18,
     transition: "background 0.2s",
   },
   label: {
@@ -119,4 +120,4 @@ const styles = {
     fontWeight: 600,
     letterSpacing: "0.02em",
   },
-};
+});

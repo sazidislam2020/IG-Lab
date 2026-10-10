@@ -39,8 +39,8 @@ export const TEMPLATES = {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: #0A0E16;
-  color: #EDEFF3;
+  background: #ffffff;
+  color: #18181B;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -61,7 +61,7 @@ h1 {
 }
 
 p {
-  color: #8A93A6;
+  color: #52525B;
   font-size: 1.1rem;
   margin-bottom: 24px;
 }
@@ -172,8 +172,8 @@ function App() {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: '#0A0E16',
-      color: '#EDEFF3',
+      background: '#ffffff',
+      color: '#18181B',
       fontFamily: 'system-ui, sans-serif',
     }}>
       <h1 style={{
@@ -185,7 +185,7 @@ function App() {
       }}>
         React App 🚀
       </h1>
-      <p style={{ color: '#8A93A6', marginBottom: 24 }}>
+      <p style={{ color: '#52525B', marginBottom: 24 }}>
         You clicked {count} time{count !== 1 ? 's' : ''}
       </p>
       <button
@@ -444,8 +444,8 @@ server.listen(PORT, () => {
   <style>
     body {
       font-family: system-ui, sans-serif;
-      background: #0A0E16;
-      color: #EDEFF3;
+      background: #ffffff;
+      color: #18181B;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -454,11 +454,11 @@ server.listen(PORT, () => {
     .card {
       text-align: center;
       padding: 40px;
-      background: #131926;
+      background: #F4F4F5;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.09);
+      border: 1px solid #E4E4E7;
     }
-    h1 { color: #3ECF8E; }
+    h1 { color: #047857; }
     button {
       background: #3ECF8E;
       color: #000;
@@ -471,7 +471,7 @@ server.listen(PORT, () => {
     }
     #result {
       margin-top: 16px;
-      color: #FFB238;
+      color: #B45309;
       font-family: monospace;
     }
   </style>

@@ -230,7 +230,7 @@ const makeStyles = (t) => ({
     display: "block",
     textAlign: "center",
     background: "#FF6B2B",
-    color: "#fff",
+    color: t.accentInk, // ink label = 6.1:1 (white failed AA)
     border: "none",
     borderRadius: 8,
     padding: "13px 20px",
@@ -247,7 +247,7 @@ const makeStyles = (t) => ({
     marginTop: 24,
   },
   link: {
-    color: "#FF6B2B",
+    color: t.accentLink,
     textDecoration: "none",
     fontWeight: 500,
   },

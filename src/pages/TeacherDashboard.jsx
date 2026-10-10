@@ -2,35 +2,38 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
-const S = {
-  page: { minHeight: '100vh', background: '#0a0a0f', color: '#e0e0e0', fontFamily: "'Inter',sans-serif" },
-  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,14,22,0.92)', backdropFilter: 'blur(6px)', position: 'sticky', top: 0, zIndex: 100 },
+const makeStyles = (t) => ({
+  page: { minHeight: '100vh', background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif" },
+  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: `1px solid ${t.border}`, background: t.surface, backdropFilter: 'blur(6px)', position: 'sticky', top: 0, zIndex: 100 },
   brand: { display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 16 },
-  spark: { width: 9, height: 9, background: '#f97316', borderRadius: 2, transform: 'rotate(45deg)', boxShadow: '0 0 10px #f97316' },
+  spark: { width: 9, height: 9, background: t.accent, borderRadius: 2, transform: 'rotate(45deg)', boxShadow: '0 0 10px #f97316' },
   navRight: { display: 'flex', alignItems: 'center', gap: 16 },
-  signOutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.16)', color: '#e0e0e0', padding: '8px 16px', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
+  signOutBtn: { background: 'transparent', border: `1px solid ${t.borderLight}`, color: t.txt, padding: '8px 16px', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
   main: { maxWidth: 1180, margin: '0 auto', padding: '40px 32px' },
   header: { marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: 800, color: '#fff' },
-  subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
+  title: { fontSize: 28, fontWeight: 800, color: t.txt },
+  subtitle: { fontSize: 14, color: t.txtDim, marginTop: 4 },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, marginBottom: 40 },
-  statCard: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 24 },
+  statCard: { background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, padding: 24 },
   statValue: { fontSize: 32, fontWeight: 800, marginBottom: 4 },
-  statLabel: { fontSize: 13, color: '#888' },
+  statLabel: { fontSize: 13, color: t.txtDim },
   section: { marginBottom: 40 },
-  sectionTitle: { fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 700, color: t.txt, marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '12px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1, color: '#5C6478', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.06)' },
-  td: { padding: '14px 16px', fontSize: 14, borderBottom: '1px solid rgba(255,255,255,0.04)' },
+  th: { textAlign: 'left', padding: '12px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1, color: t.txtDim, textTransform: 'uppercase', borderBottom: `1px solid ${t.border}` },
+  td: { padding: '14px 16px', fontSize: 14, borderBottom: `1px solid ${t.border}` },
   badge: { fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 6 },
-  loading: { textAlign: 'center', padding: 60, color: '#666' },
-  empty: { textAlign: 'center', padding: 40, color: '#5C6478', fontSize: 14 },
-  viewAll: { color: '#f97316', textDecoration: 'none', fontSize: 13, fontWeight: 600 },
-};
+  loading: { textAlign: 'center', padding: 60, color: t.txtDim },
+  empty: { textAlign: 'center', padding: 40, color: t.txtDim, fontSize: 14 },
+  viewAll: { color: t.accentLink, textDecoration: 'none', fontSize: 13, fontWeight: 600 },
+});
 
 export default function TeacherDashboard() {
   const { profile, signOut } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const [stats, setStats] = useState({ totalStudents: 0, activeToday: 0, totalSubmissions: 0, avgPoints: 0 });
   const [recentStudents, setRecentStudents] = useState([]);
   const [recentSubmissions, setRecentSubmissions] = useState([]);
@@ -109,12 +112,12 @@ export default function TeacherDashboard() {
   return (
     <div style={S.page}>
       <nav style={S.nav}>
-        <Link to="/dashboard" style={{ ...S.brand, textDecoration: 'none', color: '#e0e0e0' }}>
+        <Link to="/dashboard" style={{ ...S.brand, textDecoration: 'none', color: t.txt }}>
           <span style={S.spark} /> IGNITE LAB
         </Link>
         <div style={S.navRight}>
-          <span style={{ fontSize: 13, color: '#2FD1D6', border: '1px solid rgba(47,209,214,0.3)', padding: '4px 10px', borderRadius: 100 }}>Teacher</span>
-          <span style={{ fontSize: 14, color: '#888' }}>{profile?.email}</span>
+          <span style={{ fontSize: 13, color: t.info, border: `1px solid ${t.info}50`, padding: '4px 10px', borderRadius: 100 }}>Teacher</span>
+          <span style={{ fontSize: 14, color: t.txtDim }}>{profile?.email}</span>
           <button onClick={handleSignOut} style={S.signOutBtn}>Sign out</button>
         </div>
       </nav>
@@ -128,19 +131,19 @@ export default function TeacherDashboard() {
         {/* Stats */}
         <div style={S.statsGrid}>
           <div style={S.statCard}>
-            <div style={{ ...S.statValue, color: '#3ECF8E' }}>{stats.totalStudents}</div>
+            <div style={{ ...S.statValue, color: t.success }}>{stats.totalStudents}</div>
             <div style={S.statLabel}>Total Students</div>
           </div>
           <div style={S.statCard}>
-            <div style={{ ...S.statValue, color: '#38BDF8' }}>{stats.totalSubmissions}</div>
+            <div style={{ ...S.statValue, color: t.info }}>{stats.totalSubmissions}</div>
             <div style={S.statLabel}>Total Submissions</div>
           </div>
           <div style={S.statCard}>
-            <div style={{ ...S.statValue, color: '#f97316' }}>{stats.avgPoints}</div>
+            <div style={{ ...S.statValue, color: t.accentLink }}>{stats.avgPoints}</div>
             <div style={S.statLabel}>Avg Points/Student</div>
           </div>
           <div style={S.statCard}>
-            <div style={{ ...S.statValue, color: '#A78BFA' }}>
+            <div style={{ ...S.statValue, color: t.violet }}>
               {stats.totalStudents > 0 ? Math.round((recentSubmissions.filter(s => s.passed).length / Math.max(stats.totalSubmissions, 1)) * 100) : 0}%
             </div>
             <div style={S.statLabel}>Pass Rate</div>
@@ -154,9 +157,24 @@ export default function TeacherDashboard() {
             <Link to="/teacher/students" style={S.viewAll}>View all →</Link>
           </div>
           {recentStudents.length === 0 ? (
-            <div style={S.empty}>No approved students yet</div>
+            <div style={S.empty}>
+              {profile?.role === "teacher" ? (
+                <>
+                  <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+                    No students in your courses yet.
+                    <br />
+                    <span style={{ color: t.txtDim }}>
+                      Students appear here after an admin assigns you to a course
+                      (Admin → Courses → Teachers) and they enroll or submit work.
+                    </span>
+                  </div>
+                </>
+              ) : (
+                "No approved students yet"
+              )}
+            </div>
           ) : (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
               <table style={S.table}>
                 <thead>
                   <tr>
@@ -171,15 +189,15 @@ export default function TeacherDashboard() {
                   {recentStudents.map(s => (
                     <tr key={s.id}>
                       <td style={S.td}>
-                        <div style={{ fontWeight: 600, color: '#fff' }}>{s.full_name || 'No name'}</div>
-                        <div style={{ fontSize: 12, color: '#666' }}>{s.email}</div>
+                        <div style={{ fontWeight: 600, color: t.txt }}>{s.full_name || 'No name'}</div>
+                        <div style={{ fontSize: 12, color: t.txtDim }}>{s.email}</div>
                       </td>
-                      <td style={S.td}><span style={{ color: '#f97316', fontWeight: 700 }}>{s.totalPoints}</span></td>
+                      <td style={S.td}><span style={{ color: t.accentLink, fontWeight: 700 }}>{s.totalPoints}</span></td>
                       <td style={S.td}>{s.subCount}</td>
                       <td style={S.td}>
-                        <span style={{ ...S.badge, background: 'rgba(62,207,142,0.12)', color: '#3ECF8E' }}>{s.passedCount}</span>
+                        <span style={{ ...S.badge, background: 'rgba(62,207,142,0.12)', color: t.success }}>{s.passedCount}</span>
                       </td>
-                      <td style={{ ...S.td, fontSize: 12, color: '#666' }}>{new Date(s.created_at).toLocaleDateString()}</td>
+                      <td style={{ ...S.td, fontSize: 12, color: t.txtDim }}>{new Date(s.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -191,13 +209,16 @@ export default function TeacherDashboard() {
         {/* Recent Submissions */}
         <div style={S.section}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#fff' }}>Recent Submissions</h2>
-            <Link to="/teacher/review" style={S.viewAll}>📝 Review & Grade →</Link>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: t.txt }}>Recent Submissions</h2>
+            <Link to="/teacher/review" style={S.viewAll}>Review &amp; Grade →</Link>
           </div>
           {recentSubmissions.length === 0 ? (
-            <div style={S.empty}>No submissions yet</div>
+            <div style={S.empty}>
+              No submissions from your students yet — they'll show up here
+              as soon as someone submits a task.
+            </div>
           ) : (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' }}>
               <table style={S.table}>
                 <thead>
                   <tr>
@@ -221,15 +242,15 @@ export default function TeacherDashboard() {
                         <span style={{
                           ...S.badge,
                           background: sub.passed ? 'rgba(62,207,142,0.12)' : 'rgba(248,113,113,0.12)',
-                          color: sub.passed ? '#3ECF8E' : '#F87171',
+                          color: sub.passed ? t.success : t.danger,
                         }}>
-                          {sub.passed ? '✅ Pass' : '❌ Fail'}
+                          {sub.passed ? 'Pass' : 'Fail'}
                         </span>
                       </td>
-                      <td style={{ ...S.td, color: sub.passed ? '#f97316' : '#666', fontWeight: 600 }}>
+                      <td style={{ ...S.td, color: sub.passed ? t.accentLink : t.txtDim, fontWeight: 600 }}>
                         {sub.passed ? `+${sub.points_awarded}` : '—'}
                       </td>
-                      <td style={{ ...S.td, fontSize: 12, color: '#666' }}>
+                      <td style={{ ...S.td, fontSize: 12, color: t.txtDim }}>
                         {new Date(sub.created_at).toLocaleString()}
                       </td>
                     </tr>

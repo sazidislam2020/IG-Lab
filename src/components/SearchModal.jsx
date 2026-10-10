@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import Icon from "./Icon";
 
 export default function SearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState("");
@@ -12,6 +13,7 @@ export default function SearchModal({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { isAdmin, isSuperAdmin } = useAuth();
   const { colors: t } = useTheme();
+  const S = makeStyles(t);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -88,48 +90,53 @@ export default function SearchModal({ isOpen, onClose }) {
     results.students.length > 0;
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div style={S.overlay} onClick={onClose}>
+      <div style={S.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Search">
         {/* Search Input */}
-        <div style={styles.searchBox}>
-          <span style={styles.searchIcon}>🔍</span>
+        <div style={S.searchBox}>
+          <Icon name="search" size={18} style={S.searchIcon} />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search courses, tasks, students..."
-            style={styles.input}
+            aria-label="Search courses, tasks, students"
+            style={S.input}
           />
-          <button onClick={onClose} style={styles.closeBtn}>✕</button>
+          <button onClick={onClose} style={S.closeBtn} aria-label="Close search">
+            <Icon name="x" size={14} />
+          </button>
         </div>
 
         {/* Results */}
-        <div style={styles.results}>
+        <div style={S.results}>
           {loading && (
-            <div style={styles.loading}>Searching...</div>
+            <div style={S.loading}>Searching...</div>
           )}
 
           {!loading && query.length < 2 && (
-            <div style={styles.hint}>Type at least 2 characters to search</div>
+            <div style={S.hint}>Type at least 2 characters to search</div>
           )}
 
           {!loading && query.length >= 2 && !hasResults && (
-            <div style={styles.hint}>No results found for "{query}"</div>
+            <div style={S.hint}>No results found for "{query}"</div>
           )}
 
           {/* Courses */}
           {results.courses.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>📚 Courses</div>
+            <div style={S.section}>
+              <div style={S.sectionTitle}>
+                <Icon name="book" size={12} /> Courses
+              </div>
               {results.courses.map((course) => (
                 <div
                   key={course.id}
-                  style={styles.resultItem}
+                  style={S.resultItem}
                   onClick={() => handleSelect("course", course)}
                 >
-                  <div style={styles.resultTitle}>{course.title}</div>
-                  <div style={styles.resultDesc}>{course.description?.slice(0, 60)}</div>
+                  <div style={S.resultTitle}>{course.title}</div>
+                  <div style={S.resultDesc}>{course.description?.slice(0, 60)}</div>
                 </div>
               ))}
             </div>
@@ -137,16 +144,18 @@ export default function SearchModal({ isOpen, onClose }) {
 
           {/* Tasks */}
           {results.tasks.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>📝 Tasks</div>
+            <div style={S.section}>
+              <div style={S.sectionTitle}>
+                <Icon name="code" size={12} /> Tasks
+              </div>
               {results.tasks.map((task) => (
                 <div
                   key={task.id}
-                  style={styles.resultItem}
+                  style={S.resultItem}
                   onClick={() => handleSelect("task", task)}
                 >
-                  <div style={styles.resultTitle}>{task.title}</div>
-                  <div style={styles.resultDesc}>
+                  <div style={S.resultTitle}>{task.title}</div>
+                  <div style={S.resultDesc}>
                     {task.language} · {task.levels?.courses?.title}
                   </div>
                 </div>
@@ -156,16 +165,18 @@ export default function SearchModal({ isOpen, onClose }) {
 
           {/* Students (admin only) */}
           {results.students.length > 0 && (
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>👥 Students</div>
+            <div style={S.section}>
+              <div style={S.sectionTitle}>
+                <Icon name="users" size={12} /> Students
+              </div>
               {results.students.map((student) => (
                 <div
                   key={student.id}
-                  style={styles.resultItem}
+                  style={S.resultItem}
                   onClick={() => handleSelect("student", student)}
                 >
-                  <div style={styles.resultTitle}>{student.full_name || student.email}</div>
-                  <div style={styles.resultDesc}>{student.role} · {student.email}</div>
+                  <div style={S.resultTitle}>{student.full_name || student.email}</div>
+                  <div style={S.resultDesc}>{student.role} · {student.email}</div>
                 </div>
               ))}
             </div>
@@ -173,19 +184,19 @@ export default function SearchModal({ isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={styles.footer}>
-          <span style={styles.shortcut}>ESC</span> to close
+        <div style={S.footer}>
+          <span style={S.shortcut}>ESC</span> to close
           <span style={{ margin: "0 8px" }}>·</span>
-          <span style={styles.shortcut}>↑↓</span> to navigate
+          <span style={S.shortcut}>↑↓</span> to navigate
           <span style={{ margin: "0 8px" }}>·</span>
-          <span style={styles.shortcut}>↵</span> to select
+          <span style={S.shortcut}>↵</span> to select
         </div>
       </div>
     </div>
   );
 }
 
-const styles = {
+const makeStyles = (t) => ({
   overlay: {
     position: "fixed",
     inset: 0,
@@ -200,8 +211,8 @@ const styles = {
   modal: {
     width: "100%",
     maxWidth: 560,
-    background: "#131926",
-    border: "1px solid rgba(255,255,255,0.1)",
+    background: t.surface,
+    border: `1px solid ${t.border}`,
     borderRadius: 16,
     overflow: "hidden",
     boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
@@ -211,11 +222,12 @@ const styles = {
     alignItems: "center",
     gap: 12,
     padding: "16px 20px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    borderBottom: `1px solid ${t.border}`,
   },
   searchIcon: {
-    fontSize: 18,
-    opacity: 0.5,
+    color: t.txtSec,
+    display: "flex",
+    alignItems: "center",
   },
   input: {
     flex: 1,
@@ -223,18 +235,21 @@ const styles = {
     border: "none",
     outline: "none",
     fontSize: 16,
-    color: "#fff",
+    color: t.txt,
     fontFamily: "'Inter',sans-serif",
   },
   closeBtn: {
-    background: "rgba(255,255,255,0.06)",
+    background: t.card,
     border: "none",
-    color: "#888",
+    color: t.txtDim,
     width: 28,
     height: 28,
     borderRadius: 6,
     cursor: "pointer",
     fontSize: 12,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   results: {
     maxHeight: 400,
@@ -243,23 +258,26 @@ const styles = {
   loading: {
     padding: 24,
     textAlign: "center",
-    color: "#888",
+    color: t.txtDim,
     fontSize: 14,
   },
   hint: {
     padding: 24,
     textAlign: "center",
-    color: "#5C6478",
+    color: t.txtDim,
     fontSize: 14,
   },
   section: {
     padding: "8px 0",
   },
   sectionTitle: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
     padding: "8px 20px",
     fontSize: 11,
     fontWeight: 600,
-    color: "#5C6478",
+    color: t.txtDim,
     textTransform: "uppercase",
     letterSpacing: "0.08em",
   },
@@ -271,25 +289,25 @@ const styles = {
   resultTitle: {
     fontSize: 14,
     fontWeight: 600,
-    color: "#fff",
+    color: t.txt,
     marginBottom: 2,
   },
   resultDesc: {
     fontSize: 12,
-    color: "#888",
+    color: t.txtSec,
   },
   footer: {
     padding: "12px 20px",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
+    borderTop: `1px solid ${t.border}`,
     fontSize: 12,
-    color: "#5C6478",
+    color: t.txtDim,
     textAlign: "center",
   },
   shortcut: {
-    background: "rgba(255,255,255,0.06)",
+    background: t.card,
     padding: "2px 6px",
     borderRadius: 4,
     fontSize: 11,
     fontFamily: "monospace",
   },
-};
+});

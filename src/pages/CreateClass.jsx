@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useTheme } from "../contexts/ThemeContext";
+import Icon from "../components/Icon";
 
 export default function CreateClass() {
   const { profile, isAdmin, isSuperAdmin, isTeacher } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedModuleId = searchParams.get("module");
@@ -106,7 +110,7 @@ export default function CreateClass() {
       <nav style={S.nav}>
         <div style={S.navLeft}>
           <Link to="/classes" style={S.backLink}>← Live Classes</Link>
-          <span style={S.brand}>📡 Schedule a Class</span>
+          <span style={S.brand}><Icon name="video" size={18} /> Schedule a Class</span>
         </div>
       </nav>
 
@@ -122,7 +126,7 @@ export default function CreateClass() {
                 onClick={() => setMode("webinar")}
                 style={mode === "webinar" ? { ...S.modeBtn, ...S.modeBtnActive } : S.modeBtn}
               >
-                🎤 Standalone Webinar
+                <Icon name="video" size={14} /> Standalone Webinar
               </button>
             )}
             {canCreateCourseClass && (
@@ -130,15 +134,15 @@ export default function CreateClass() {
                 onClick={() => setMode("course")}
                 style={mode === "course" ? { ...S.modeBtn, ...S.modeBtnActive } : S.modeBtn}
               >
-                📚 Course Session
+                <Icon name="book" size={14} /> Course Session
               </button>
             )}
           </div>
 
           {mode === "webinar" && (
             <div style={S.infoBox}>
-              <span style={{ color: "#FFB238" }}>🎤</span>
-              <span style={{ fontSize: 13, color: DIM }}>
+              <span style={{ color: t.warn, display: "flex" }}><Icon name="video" size={16} /></span>
+              <span style={{ fontSize: 13, color: t.txtDim }}>
                 This will appear as a standalone webinar — not linked to any course. Students can join from the main Live Classes page.
               </span>
             </div>
@@ -204,14 +208,14 @@ export default function CreateClass() {
           </div>
 
           <div style={S.field}>
-            <label style={S.label}>🔗 Meeting Link (Google Meet / Zoom / any URL)</label>
+            <label style={S.label}>Meeting Link (Google Meet / Zoom / any URL)</label>
             <input
               value={meetLink}
               onChange={(e) => setMeetLink(e.target.value)}
               placeholder="https://meet.google.com/xxx-xxxx-xxx or Zoom link"
               style={S.input}
             />
-            <p style={{ fontSize: 11, color: DIM, marginTop: 4 }}>
+            <p style={{ fontSize: 11, color: t.txtDim, marginTop: 4 }}>
               Students will click this link to join the video call. Paste your Google Meet, Zoom, or any meeting URL.
             </p>
           </div>
@@ -260,14 +264,14 @@ export default function CreateClass() {
               disabled={!title.trim() || creating}
               style={{ ...S.startNowBtn, opacity: !title.trim() || creating ? 0.5 : 1 }}
             >
-              {creating ? "Starting..." : "🔴 Start Now"}
+              {creating ? "Starting..." : <><Icon name="play" size={14} /> Start Now</>}
             </button>
             <button
               onClick={() => handleCreate(false)}
               disabled={!title.trim() || !date || !time || creating}
               style={{ ...S.createBtn, opacity: !title.trim() || !date || !time || creating ? 0.5 : 1 }}
             >
-              {creating ? "Creating..." : "📅 Schedule"}
+              {creating ? "Creating..." : <><Icon name="clock" size={14} /> Schedule</>}
             </button>
           </div>
         </div>
@@ -284,73 +288,71 @@ export default function CreateClass() {
   );
 }
 
-const BG = "#0A0E16";
-const PANEL = "#131926";
-const LINE = "rgba(237,239,243,0.09)";
-const TXT = "#EDEFF3";
-const DIM = "#8A93A6";
-const ORG = "#FF5A1F";
-
-const S = {
-  page: { minHeight: "100vh", background: BG, color: TXT, fontFamily: "Inter,sans-serif" },
-  nav: { display: "flex", alignItems: "center", padding: "16px 32px", borderBottom: "1px solid " + LINE, background: PANEL },
+const makeStyles = (t) => {
+  const ORG = t.accent;
+  return {
+  page: { minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "Inter,sans-serif" },
+  nav: { display: "flex", alignItems: "center", padding: "16px 32px", borderBottom: "1px solid " + t.border, background: t.surface },
   navLeft: { display: "flex", alignItems: "center", gap: 16 },
-  backLink: { color: DIM, textDecoration: "none", fontSize: 13 },
-  brand: { fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700 },
+  backLink: { color: t.txtDim, textDecoration: "none", fontSize: 13 },
+  brand: { fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 },
   main: { maxWidth: 640, margin: "0 auto", padding: "40px 32px" },
-  formCard: { background: PANEL, border: "1px solid " + LINE, borderRadius: 16, padding: 32 },
+  formCard: { background: t.card, border: "1px solid " + t.border, borderRadius: 16, padding: 32 },
   formTitle: { fontSize: 22, fontWeight: 700, marginBottom: 4 },
-  formSubtitle: { fontSize: 14, color: DIM, marginBottom: 24 },
+  formSubtitle: { fontSize: 14, color: t.txtDim, marginBottom: 24 },
 
   modeRow: { display: "flex", gap: 8, marginBottom: 20 },
   modeBtn: {
     flex: 1, padding: "10px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-    background: BG, border: "1px solid " + LINE, color: DIM, cursor: "pointer",
-    transition: "all 0.15s",
+    background: t.bg, border: "1px solid " + t.border, color: t.txtDim, cursor: "pointer",
+    transition: "all 0.15s", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
   },
-  modeBtnActive: { borderColor: ORG, color: ORG, background: ORG + "12" },
+  modeBtnActive: { borderColor: ORG, color: t.accentLink, background: ORG + "12" },
 
   infoBox: {
-    display: "flex", alignItems: "center", gap: 10, background: BG,
-    border: "1px solid " + LINE, borderRadius: 8, padding: "12px 14px", marginBottom: 20,
+    display: "flex", alignItems: "center", gap: 10, background: t.bg,
+    border: "1px solid " + t.border, borderRadius: 8, padding: "12px 14px", marginBottom: 20,
   },
 
   field: { marginBottom: 18 },
-  label: { display: "block", fontSize: 13, fontWeight: 600, color: DIM, marginBottom: 6 },
+  label: { display: "block", fontSize: 13, fontWeight: 600, color: t.txtDim, marginBottom: 6 },
   input: {
-    width: "100%", padding: "10px 14px", fontSize: 14, background: BG,
-    border: "1px solid " + LINE, borderRadius: 8, color: TXT, outline: "none",
+    width: "100%", padding: "10px 14px", fontSize: 14, background: t.bg,
+    border: "1px solid " + t.border, borderRadius: 8, color: t.txt, outline: "none",
     boxSizing: "border-box",
   },
   select: {
-    width: "100%", padding: "10px 14px", fontSize: 14, background: BG,
-    border: "1px solid " + LINE, borderRadius: 8, color: TXT, outline: "none",
+    width: "100%", padding: "10px 14px", fontSize: 14, background: t.bg,
+    border: "1px solid " + t.border, borderRadius: 8, color: t.txt, outline: "none",
     boxSizing: "border-box", cursor: "pointer",
   },
   textarea: {
-    width: "100%", padding: "10px 14px", fontSize: 14, background: BG,
-    border: "1px solid " + LINE, borderRadius: 8, color: TXT, outline: "none",
+    width: "100%", padding: "10px 14px", fontSize: 14, background: t.bg,
+    border: "1px solid " + t.border, borderRadius: 8, color: t.txt, outline: "none",
     boxSizing: "border-box", resize: "vertical", fontFamily: "inherit",
   },
   row: { display: "flex", gap: 12 },
   durationRow: { display: "flex", gap: 8 },
   durBtn: {
-    background: BG, border: "1px solid " + LINE, color: DIM,
+    background: t.bg, border: "1px solid " + t.border, color: t.txtDim,
     padding: "8px 16px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontWeight: 600,
   },
-  durBtnActive: { borderColor: ORG, color: ORG, background: ORG + "12" },
-  actions: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 },
+  durBtnActive: { borderColor: ORG, color: t.accentLink, background: ORG + "12" },
+  actions: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24, flexWrap: "wrap" },
   cancelBtn: {
-    background: "transparent", border: "1px solid " + LINE, color: TXT,
+    background: "transparent", border: "1px solid " + t.border, color: t.txt,
     padding: "10px 20px", borderRadius: 8, fontSize: 13, cursor: "pointer",
   },
   createBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    display: "inline-flex", alignItems: "center", gap: 6,
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
   },
   startNowBtn: {
-    background: "linear-gradient(135deg,#F87171,#ef4444)", color: "#fff", border: "none",
+    display: "inline-flex", alignItems: "center", gap: 6,
+    background: "linear-gradient(135deg,#F87171,#ef4444)", color: t.accentInk, border: "none",
     padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer",
     boxShadow: "0 0 20px rgba(248,113,113,0.3)",
   },
+  };
 };

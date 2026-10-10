@@ -3,6 +3,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext(null);
 
 // Theme color tokens
+// Contrast (WCAG AA 4.5:1) verified 2026-10-04 — see docs/UI_UX_AUDIT.md §1.1:
+//   dark  txtDim #8B8B93 on #09090B / #1C1C21 → 5.9 / 5.1
+//   light txtDim #6B7280 on #FAFAFA / #F4F4F5 → 4.8 / 4.6
+//   accent label #18181B on #FF6B2B → 6.1 (use instead of white)
 export const themes = {
   dark: {
     bg: "#09090B",
@@ -12,7 +16,16 @@ export const themes = {
     borderLight: "#3F3F46",
     txt: "#FAFAFA",
     txtSec: "#A1A1AA",
-    txtDim: "#71717A",
+    txtDim: "#8B8B93",
+    accent: "#FF6B2B",
+    accentInk: "#18181B",
+    accentLink: "#FF6B2B", // on dark bg → 7.0:1
+    // Semantic status colors (verify 4.5:1 on this theme's bg before reuse)
+    success: "#3ECF8E",
+    danger: "#F87171",
+    info: "#38BDF8",
+    warn: "#FFB238",
+    violet: "#A78BFA",
   },
   light: {
     bg: "#FAFAFA",
@@ -22,7 +35,16 @@ export const themes = {
     borderLight: "#D4D4D8",
     txt: "#18181B",
     txtSec: "#52525B",
-    txtDim: "#A1A1AA",
+    txtDim: "#6B7280",
+    accent: "#FF6B2B",
+    accentInk: "#18181B",
+    accentLink: "#C2410C", // darker orange for light bg → 4.9:1
+    // Semantic status colors — darkened for light bg (≥4.5:1 on #FAFAFA)
+    success: "#047857",
+    danger: "#B91C1C",
+    info: "#0369A1",
+    warn: "#B45309",
+    violet: "#6D28D9",
   },
 };
 

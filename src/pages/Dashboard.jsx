@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import Icon from "../components/Icon";
 import { useTheme } from "../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -164,6 +165,25 @@ export default function Dashboard() {
     if (h < 17) return "Good afternoon";
     return "Good evening";
   })();
+
+  // Profile failed to load (network/auth error): explain instead of
+  // rendering a half-empty page with no role sections at all.
+  if (!loading && !profile) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: t.bg, color: t.txt, fontFamily: "'Inter', system-ui, sans-serif", gap: 14, padding: 24, textAlign: "center" }}>
+        <span style={{ color: "#FF6B2B" }}><Icon name="alert" size={40} /></span>
+        <h2 style={{ fontSize: 20, fontWeight: 700 }}>Couldn't load your profile</h2>
+        <p style={{ fontSize: 14, color: t.txtSec, maxWidth: 360, lineHeight: 1.6 }}>
+          We couldn't reach the server. Check your internet connection and try
+          again — your data is safe.
+        </p>
+        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+          <button onClick={() => window.location.reload()} style={{ background: "#FF6B2B", color: t.accentInk, border: "none", borderRadius: 8, padding: "11px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Retry</button>
+          <button onClick={async () => { await signOut(); navigate("/login"); }} style={{ background: "transparent", border: `1px solid ${t.border}`, color: t.txtSec, borderRadius: 8, padding: "11px 20px", fontSize: 14, cursor: "pointer" }}>Sign out</button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

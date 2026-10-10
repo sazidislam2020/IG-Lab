@@ -4,39 +4,43 @@ import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
 import { executeCode } from '../lib/runCode';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import Icon from '../components/Icon';
 
-const S = {
-  page: { height: '100vh', display: 'flex', flexDirection: 'column', background: '#0a0a0f', color: '#e0e0e0', fontFamily: "'Inter',sans-serif", overflow: 'hidden' },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: '#131926', borderBottom: '1px solid rgba(255,255,255,0.06)' },
+const makeStyles = (t) => ({
+  page: { height: '100vh', display: 'flex', flexDirection: 'column', background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif", overflow: 'hidden' },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: t.surface, borderBottom: `1px solid ${t.border}` },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 16 },
-  backLink: { color: '#888', textDecoration: 'none', fontSize: 13 },
+  backLink: { color: t.txtDim, textDecoration: 'none', fontSize: 13 },
   title: { fontSize: 16, fontWeight: 600 },
-  runBtn: { background: 'linear-gradient(135deg,#f97316,#ef4444)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' },
-  submitBtn: { background: '#3ECF8E', color: '#000', border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginLeft: 8 },
+  runBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: `linear-gradient(135deg, ${t.accent}, #ef4444)`, color: t.accentInk, border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  submitBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: t.success, color: t.bg, border: 'none', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginLeft: 8 },
   split: { flex: 1, display: 'flex', overflow: 'hidden' },
-  leftPanel: { flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.06)' },
-  rightPanel: { width: '40%', display: 'flex', flexDirection: 'column', background: '#0F1420' },
-  panelLabel: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1.2, color: '#5C6478', borderBottom: '1px solid rgba(255,255,255,0.06)', textTransform: 'uppercase' },
+  leftPanel: { flex: 1, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${t.border}` },
+  rightPanel: { width: '40%', display: 'flex', flexDirection: 'column', background: t.card },
+  panelLabel: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1.2, color: t.txtDim, borderBottom: `1px solid ${t.border}`, textTransform: 'uppercase' },
   panelDot: { width: 6, height: 6, borderRadius: '50%', display: 'inline-block' },
-  taskPrompt: { padding: 20, fontSize: 14, lineHeight: 1.7, color: '#ccc', borderBottom: '1px solid rgba(255,255,255,0.06)', overflow: 'auto', maxHeight: 200, background: '#131926' },
-  promptTitle: { fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 },
-  promptText: { color: '#aaa', lineHeight: 1.6 },
+  taskPrompt: { padding: 20, fontSize: 14, lineHeight: 1.7, color: t.txtSec, borderBottom: `1px solid ${t.border}`, overflow: 'auto', maxHeight: 200, background: t.surface },
+  promptTitle: { fontSize: 18, fontWeight: 700, color: t.txt, marginBottom: 8 },
+  promptText: { color: t.txtSec, lineHeight: 1.6 },
   output: { flex: 1, overflow: 'auto', padding: 16, fontFamily: "'JetBrains Mono',monospace", fontSize: 13, lineHeight: 1.7 },
-  outputPlaceholder: { color: '#5C6478', textAlign: 'center', marginTop: 60, fontSize: 14 },
+  outputPlaceholder: { color: t.txtDim, textAlign: 'center', marginTop: 60, fontSize: 14 },
   outputLine: { whiteSpace: 'pre-wrap', wordBreak: 'break-all' },
-  passed: { background: 'rgba(62,207,142,0.12)', color: '#3ECF8E', padding: '12px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  failed: { background: 'rgba(248,113,113,0.12)', color: '#F87171', padding: '12px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, marginBottom: 12 },
-  tabs: { display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' },
-  tab: { padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#5C6478', background: 'transparent', border: 'none', borderBottom: '2px solid transparent' },
-  tabActive: { color: '#f97316', borderBottom: '2px solid #f97316' },
-  tabSubmissions: { padding: 16, fontSize: 13, color: '#888' },
-  submissionRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' },
+  passed: { background: 'rgba(62,207,142,0.12)', color: t.success, padding: '12px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, marginBottom: 12 },
+  failed: { background: 'rgba(248,113,113,0.12)', color: t.danger, padding: '12px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, marginBottom: 12 },
+  tabs: { display: 'flex', gap: 0, borderBottom: `1px solid ${t.border}` },
+  tab: { padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: t.txtDim, background: 'transparent', border: 'none', borderBottom: '2px solid transparent' },
+  tabActive: { color: t.accentLink, borderBottom: `2px solid ${t.accent}` },
+  tabSubmissions: { padding: 16, fontSize: 13, color: t.txtDim },
+  submissionRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: `1px solid ${t.border}` },
   submissionStatus: { fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 4 },
-};
+});
 
 export default function TaskPage() {
   const { taskId } = useParams();
   const { user } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const [task, setTask] = useState(null);
   const [level, setLevel] = useState(null);
   const [code, setCode] = useState('');
@@ -99,16 +103,16 @@ export default function TaskPage() {
       try {
         const result = await executeCode({ language: task.language, code });
         const lines = [];
-        if (result.status_id && result.status_id !== 3) lines.push('❌ ' + result.status);
-        if (result.compile_output) lines.push('📝 ' + result.compile_output);
+        if (result.status_id && result.status_id !== 3) lines.push('[error] ' + result.status);
+        if (result.compile_output) lines.push(result.compile_output);
         if (result.stdout) lines.push(...result.stdout.split('\n'));
-        if (result.stderr) lines.push('⚠️ ' + result.stderr);
+        if (result.stderr) lines.push('[stderr] ' + result.stderr);
         if (result.time) lines.push('');
-        if (result.time) lines.push(`⏱ ${result.time}s | ${result.memory || 0} KB`);
+        if (result.time) lines.push(`time: ${result.time}s | ${result.memory || 0} KB`);
         if (lines.length === 0) lines.push('(no output)');
         setOutput(lines);
       } catch (err) {
-        setOutput(['❌ ' + err.message]);
+        setOutput(['[error] ' + err.message]);
       }
     }
     setIsRunning(false);
@@ -119,7 +123,7 @@ export default function TaskPage() {
     // One-attempt policy: only one submission per task per student
     if (existingSubmission) {
       setRightTab('output');
-      setOutput(['🔒 You have already submitted this task. One attempt only.']);
+      setOutput(['You have already submitted this task — one attempt only.']);
       return;
     }
     setIsRunning(true);
@@ -148,13 +152,13 @@ export default function TaskPage() {
         const result = await executeCode({ language: task.language, code });
         outputText = result.stdout || result.compile_output || '';
         const lines = [];
-        if (result.status_id && result.status_id !== 3) lines.push('❌ ' + result.status);
-        if (result.compile_output) lines.push('📝 ' + result.compile_output);
+        if (result.status_id && result.status_id !== 3) lines.push('[error] ' + result.status);
+        if (result.compile_output) lines.push(result.compile_output);
         if (result.stdout) lines.push(...result.stdout.split('\n'));
-        if (result.stderr) lines.push('⚠️ ' + result.stderr);
+        if (result.stderr) lines.push('[stderr] ' + result.stderr);
         setOutput(lines.length > 0 ? lines : ['(no output)']);
       } catch (err) {
-        outputText = '❌ ' + err.message;
+        outputText = '[error] ' + err.message;
         setOutput([outputText]);
       }
     }
@@ -178,7 +182,7 @@ export default function TaskPage() {
     if (subErr) {
       setIsRunning(false);
       setRightTab('output');
-      setOutput(['🔒 ' + (subErr.message || 'Submission was not saved. One attempt only.')]);
+      setOutput(['[error] ' + (subErr.message || 'Submission was not saved. One attempt only.')]);
       return;
     }
 
@@ -210,15 +214,15 @@ export default function TaskPage() {
           <Link to={level?.courses?.id ? `/courses/${level.courses.id}` : '/courses'} style={S.backLink}>← Back to Course</Link>
           <span style={S.title}>{task?.title || 'Loading...'}</span>
           {task?.is_boss || level?.is_boss ? (
-            <span style={{ fontSize: 11, fontWeight: 700, background: 'linear-gradient(135deg,#ef4444,#f97316)', color: '#fff', padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase' }}>⚔️ Boss</span>
+            <span style={{ fontSize: 11, fontWeight: 700, background: `linear-gradient(135deg, #ef4444, ${t.accent})`, color: t.accentInk, padding: '3px 10px', borderRadius: 6, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="bolt" size={11} /> Boss</span>
           ) : null}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={runCode} disabled={isRunning} style={S.runBtn}>
-            {isRunning ? 'Running...' : '▶ Run'}
+            {isRunning ? 'Running...' : <><Icon name="play" size={13} /> Run</>}
           </button>
           <button onClick={submitCode} disabled={isRunning || !!existingSubmission} style={{ ...S.submitBtn, opacity: existingSubmission ? 0.5 : 1, cursor: existingSubmission ? 'not-allowed' : 'pointer' }}>
-            {existingSubmission ? '🔒 Submitted' : '📤 Submit'}
+            {existingSubmission ? 'Submitted' : <><Icon name="check" size={13} /> Submit</>}
           </button>
         </div>
       </div>
@@ -231,11 +235,11 @@ export default function TaskPage() {
             <div style={S.promptTitle}>{task?.title}</div>
             <div style={S.promptText}>{task?.prompt}</div>
             {task?.expected_output && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(62,207,142,0.08)', borderRadius: 6, fontSize: 12, color: '#3ECF8E' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(62,207,142,0.08)', borderRadius: 6, fontSize: 12, color: t.success }}>
                 <strong>Expected output:</strong> <code>{task.expected_output}</code>
               </div>
             )}
-            <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
+            <div style={{ marginTop: 8, fontSize: 12, color: t.txtDim }}>
               Language: <strong>{task?.language}</strong> · Points: <strong>{task?.points_value}</strong>
             </div>
           </div>
@@ -281,31 +285,31 @@ export default function TaskPage() {
               {existingSubmission && !submitResult && (
                 existingSubmission.passed ? (
                   <div style={S.passed}>
-                    ✅ Passed! +{existingSubmission.points_awarded} points awarded
+                    Passed! +{existingSubmission.points_awarded} points awarded
                     {existingSubmission.graded_by === 'manual'
                       ? <span style={{ opacity: 0.75 }}> — manually reviewed by teacher</span>
                       : <span style={{ opacity: 0.75 }}> — auto-graded</span>}
                   </div>
                 ) : (
                   <div style={S.failed}>
-                    ❌ Not passed. You have used your one attempt for this task{existingSubmission.graded_by === 'manual' ? ' (teacher review)' : ''}.
+                    Not passed. You have used your one attempt for this task{existingSubmission.graded_by === 'manual' ? ' (teacher review)' : ''}.
                   </div>
                 )
               )}
               {submitResult === 'passed' && (
-                <div style={S.passed}>✅ Passed! +{task?.points_value} points awarded</div>
+                <div style={S.passed}>Passed! +{task?.points_value} points awarded</div>
               )}
               {submitResult === 'failed' && (
-                <div style={S.failed}>❌ Not passed. You have used your one attempt for this task.</div>
+                <div style={S.failed}>Not passed. You have used your one attempt for this task.</div>
               )}
               {output.length === 0 ? (
-                <div style={S.outputPlaceholder}>Click <strong>▶ Run</strong> or <strong>📤 Submit</strong></div>
+                <div style={S.outputPlaceholder}>Click <strong>Run</strong> or <strong>Submit</strong></div>
               ) : (
                 output.map((line, i) => (
                   <div key={i} style={{
                     ...S.outputLine,
-                    color: line.startsWith('Error') || line.startsWith('❌') ? '#F87171' :
-                           line.startsWith('⚠') ? '#FFB238' : '#EDEFF3'
+                    color: line.startsWith('Error') || line.startsWith('[error]') ? t.danger :
+                           line.startsWith('[stderr]') ? t.warn : t.txt
                   }}>{line}</div>
                 ))
               )}
@@ -313,25 +317,25 @@ export default function TaskPage() {
           ) : (
             <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
               {submissions.length === 0 ? (
-                <div style={{ color: '#5C6478', textAlign: 'center', marginTop: 40 }}>No submissions yet</div>
+                <div style={{ color: t.txtDim, textAlign: 'center', marginTop: 40 }}>No submissions yet</div>
               ) : (
                 <>
-                  <div style={{ fontSize: 12, color: '#5C6478', marginBottom: 12 }}>One submission per task — the result below is final unless a teacher reviews it.</div>
+                  <div style={{ fontSize: 12, color: t.txtDim, marginBottom: 12 }}>One submission per task — the result below is final unless a teacher reviews it.</div>
               {
                 submissions.map(sub => (
                   <div key={sub.id} style={S.submissionRow}>
                     <span style={{
                       ...S.submissionStatus,
                       background: sub.passed ? 'rgba(62,207,142,0.12)' : 'rgba(248,113,113,0.12)',
-                      color: sub.passed ? '#3ECF8E' : '#F87171',
+                      color: sub.passed ? t.success : t.danger,
                     }}>
-                      {sub.passed ? '✅ Pass' : '❌ Fail'}
+                      {sub.passed ? 'Pass' : 'Fail'}
                     </span>
-                    <span style={{ fontSize: 12, color: '#888' }}>
+                    <span style={{ fontSize: 12, color: t.txtDim }}>
                       {new Date(sub.created_at).toLocaleString()}
                     </span>
                     {sub.passed && (
-                      <span style={{ fontSize: 12, color: '#f97316', fontWeight: 600 }}>+{sub.points_awarded}</span>
+                      <span style={{ fontSize: 12, color: t.accentLink, fontWeight: 600 }}>+{sub.points_awarded}</span>
                     )}
                   </div>
                 ))}
@@ -345,7 +349,7 @@ export default function TaskPage() {
       <style>{`
         @media (max-width: 768px) {
           .task-page .split { flex-direction: column !important; }
-          .task-page .leftPanel { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; min-height: 45vh; }
+          .task-page .leftPanel { border-right: none !important; border-bottom: 1px solid var(--border) !important; min-height: 45vh; }
           .task-page .rightPanel { width: 100% !important; min-height: 35vh; }
           .task-page header { flex-wrap: wrap; gap: 8px; padding: 10px 16px !important; }
           .task-page header > div:last-child { gap: 6px; }

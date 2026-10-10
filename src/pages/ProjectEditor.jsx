@@ -3,9 +3,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { supabase } from "../lib/supabase";
 import { TEMPLATES, getMonacoLang, buildFileTree } from "../lib/projectTemplates";
+import { useTheme } from "../contexts/ThemeContext";
+import Icon from "../components/Icon";
 
 export default function ProjectEditor() {
   const { projectId } = useParams();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [files, setFiles] = useState([]);
@@ -167,9 +171,9 @@ export default function ProjectEditor() {
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
-        setOutput(["✅ Preview opened in new tab!"]);
+        setOutput(["Preview opened in new tab!"]);
       } else {
-        setOutput(["❌ No index.html found"]);
+        setOutput(["[error] No index.html found"]);
       }
       setIsRunning(false);
       return;
@@ -178,7 +182,7 @@ export default function ProjectEditor() {
     if (project.stack === "python") {
       const mainFile = files.find((f) => f.path === "main.py" || f.path.endsWith(".py"));
       if (!mainFile) {
-        setOutput(["❌ No Python file found (main.py)"]);
+        setOutput(["[error] No Python file found (main.py)"]);
         setIsRunning(false);
         return;
       }
@@ -193,16 +197,16 @@ export default function ProjectEditor() {
         );
         const result = await resp.json();
         const lines = [];
-        if (result.status?.id === 3) lines.push("✅ " + result.status.description);
-        else lines.push("❌ " + (result.status?.description || "Error"));
+        if (result.status?.id === 3) lines.push("[ok] " + result.status.description);
+        else lines.push("[error] " + (result.status?.description || "Error"));
         lines.push("");
         if (result.stdout) lines.push(...result.stdout.split("\n"));
-        if (result.stderr) { lines.push("⚠️ stderr:"); lines.push(result.stderr); }
-        if (result.time) lines.push(`\n⏱ Time: ${result.time}s | Memory: ${result.memory} KB`);
+        if (result.stderr) { lines.push("[stderr]"); lines.push(result.stderr); }
+        if (result.time) lines.push(`\ntime: ${result.time}s | memory: ${result.memory} KB`);
         if (lines.length <= 2) lines.push("(no output)");
         setOutput(lines);
       } catch (err) {
-        setOutput(["❌ Connection failed: " + err.message]);
+        setOutput(["[error] Connection failed: " + err.message]);
       }
       setIsRunning(false);
       return;
@@ -211,7 +215,7 @@ export default function ProjectEditor() {
     if (project.stack === "java") {
       const mainFile = files.find((f) => f.path.endsWith(".java"));
       if (!mainFile) {
-        setOutput(["❌ No Java file found"]);
+        setOutput(["[error] No Java file found"]);
         setIsRunning(false);
         return;
       }
@@ -228,17 +232,17 @@ export default function ProjectEditor() {
         );
         const result = await resp.json();
         const lines = [];
-        if (result.status?.id === 3) lines.push("✅ " + result.status.description);
-        else lines.push("❌ " + (result.status?.description || "Error"));
+        if (result.status?.id === 3) lines.push("[ok] " + result.status.description);
+        else lines.push("[error] " + (result.status?.description || "Error"));
         lines.push("");
-        if (result.compile_output) { lines.push("📝 Compile:"); lines.push(result.compile_output); lines.push(""); }
+        if (result.compile_output) { lines.push("Compile:"); lines.push(result.compile_output); lines.push(""); }
         if (result.stdout) lines.push(...result.stdout.split("\n"));
-        if (result.stderr) { lines.push("⚠️ stderr:"); lines.push(result.stderr); }
-        if (result.time) lines.push(`\n⏱ Time: ${result.time}s | Memory: ${result.memory} KB`);
+        if (result.stderr) { lines.push("[stderr]"); lines.push(result.stderr); }
+        if (result.time) lines.push(`\ntime: ${result.time}s | memory: ${result.memory} KB`);
         if (lines.length <= 2) lines.push("(no output)");
         setOutput(lines);
       } catch (err) {
-        setOutput(["❌ Connection failed: " + err.message]);
+        setOutput(["[error] Connection failed: " + err.message]);
       }
       setIsRunning(false);
       return;
@@ -247,7 +251,7 @@ export default function ProjectEditor() {
     if (project.stack === "cpp") {
       const mainFile = files.find((f) => f.path.endsWith(".cpp") || f.path.endsWith(".c"));
       if (!mainFile) {
-        setOutput(["❌ No C/C++ file found"]);
+        setOutput(["[error] No C/C++ file found"]);
         setIsRunning(false);
         return;
       }
@@ -265,17 +269,17 @@ export default function ProjectEditor() {
         );
         const result = await resp.json();
         const lines = [];
-        if (result.status?.id === 3) lines.push("✅ " + result.status.description);
-        else lines.push("❌ " + (result.status?.description || "Error"));
+        if (result.status?.id === 3) lines.push("[ok] " + result.status.description);
+        else lines.push("[error] " + (result.status?.description || "Error"));
         lines.push("");
-        if (result.compile_output) { lines.push("📝 Compile:"); lines.push(result.compile_output); lines.push(""); }
+        if (result.compile_output) { lines.push("Compile:"); lines.push(result.compile_output); lines.push(""); }
         if (result.stdout) lines.push(...result.stdout.split("\n"));
-        if (result.stderr) { lines.push("⚠️ stderr:"); lines.push(result.stderr); }
-        if (result.time) lines.push(`\n⏱ Time: ${result.time}s | Memory: ${result.memory} KB`);
+        if (result.stderr) { lines.push("[stderr]"); lines.push(result.stderr); }
+        if (result.time) lines.push(`\ntime: ${result.time}s | memory: ${result.memory} KB`);
         if (lines.length <= 2) lines.push("(no output)");
         setOutput(lines);
       } catch (err) {
-        setOutput(["❌ Connection failed: " + err.message]);
+        setOutput(["[error] Connection failed: " + err.message]);
       }
       setIsRunning(false);
       return;
@@ -284,10 +288,10 @@ export default function ProjectEditor() {
     // Node.js — show instructions (can't run server in browser)
     if (project.stack === "node") {
       setOutput([
-        "📋 Node.js projects can't run in the browser.",
+        "Node.js projects can't run in the browser.",
         "",
         "To run locally:",
-        "1. Download the project (click ↓ button)",
+        "1. Download the project (click the Download button)",
         "2. Open terminal in the project folder",
         "3. Run: node server.js",
         "",
@@ -297,7 +301,7 @@ export default function ProjectEditor() {
       return;
     }
 
-    setOutput(["⚠️ Run not supported for this stack yet."]);
+    setOutput(["[warn] Run not supported for this stack yet."]);
     setIsRunning(false);
   }
 
@@ -370,7 +374,7 @@ export default function ProjectEditor() {
           <div key={prefix + name}>
             <div style={S.treeFolder} onClick={() => toggleFolder(name)}>
               <span style={S.treeChevron}>{isExpanded ? "▾" : "▸"}</span>
-              <span>📁 {name}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="folder" size={13} /> {name}</span>
             </div>
             {isExpanded && (
               <div style={{ paddingLeft: 16 }}>
@@ -384,7 +388,7 @@ export default function ProjectEditor() {
   }
 
   if (!project) {
-    return <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center", color: "#8A93A6" }}>Loading...</div>;
+    return <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center", color: t.txtDim }}>Loading...</div>;
   }
 
   const template = TEMPLATES[project.stack];
@@ -403,10 +407,10 @@ export default function ProjectEditor() {
             ...S.saveBtn,
             opacity: Object.keys(dirty).length === 0 ? 0.4 : 1,
           }}>
-            {saving ? "Saving..." : "💾 Save"}
+            {saving ? "Saving..." : <><Icon name="check" size={13} /> Save</>}
           </button>
           <button onClick={runProject} disabled={isRunning} style={S.runBtn}>
-            {isRunning ? "⏳ Running..." : "▶ " + (template?.runLabel || "Run")}
+            {isRunning ? "Running..." : <><Icon name="play" size={13} /> {(template?.runLabel || "Run")}</>}
           </button>
           <button onClick={downloadProject} style={S.downloadBtn} title="Download project">
             ↓ Download
@@ -418,7 +422,7 @@ export default function ProjectEditor() {
         {/* Sidebar — File Tree */}
         <div style={S.sidebar}>
           <div style={S.sidebarHeader}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#5C6478", letterSpacing: 1.2 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: t.txtDim, letterSpacing: 1.2 }}>
               FILES
             </span>
             <button onClick={() => setShowNewFile(true)} style={S.newFileBtn} title="New file">+</button>
@@ -456,7 +460,7 @@ export default function ProjectEditor() {
                 >
                   <span>{getFileIcon(f.path.split("/").pop())}</span>
                   <span style={{ marginLeft: 4 }}>{f.path.split("/").pop()}</span>
-                  {dirty[f.id] && <span style={{ color: "#FFB238", marginLeft: 4 }}>●</span>}
+                  {dirty[f.id] && <span style={{ color: t.warn, marginLeft: 4 }}>●</span>}
                   <button onClick={(e) => closeFile(f.id, e)} style={S.tabClose}>×</button>
                 </div>
               ))}
@@ -491,8 +495,8 @@ export default function ProjectEditor() {
               />
             ) : (
               <div style={S.noFile}>
-                <div style={{ fontSize: 36, marginBottom: 12 }}>📝</div>
-                <div style={{ fontSize: 14, color: "#5C6478" }}>
+                <div style={{ marginBottom: 12, display: "flex", justifyContent: "center", color: t.txtDim }}><Icon name="code" size={34} /></div>
+                <div style={{ fontSize: 14, color: t.txtDim }}>
                   Select a file from the sidebar or create a new one
                 </div>
               </div>
@@ -504,24 +508,24 @@ export default function ProjectEditor() {
         {showOutput && (
           <div style={S.outputPanel}>
             <div style={S.outputHeader}>
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, color: "#5C6478" }}>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, color: t.txtDim }}>
                 OUTPUT
               </span>
               <button onClick={() => setShowOutput(false)} style={S.closeOutput}>×</button>
             </div>
             <div style={S.outputContent}>
               {output.length === 0 ? (
-                <div style={{ color: "#5C6478", textAlign: "center", marginTop: 40 }}>
-                  Click ▶ Run to execute
+                <div style={{ color: t.txtDim, textAlign: "center", marginTop: 40 }}>
+                  Click Run to execute
                 </div>
               ) : (
                 output.map((line, i) => (
                   <div key={i} style={{
                     ...S.outputLine,
-                    color: line.startsWith("❌") ? "#F87171" :
-                           line.startsWith("✅") ? "#3ECF8E" :
-                           line.startsWith("⚠") ? "#FFB238" :
-                           line.startsWith("📝") ? "#8A93A6" : "#EDEFF3",
+                    color: line.startsWith("[error]") ? t.danger :
+                           line.startsWith("[ok]") ? t.success :
+                           line.startsWith("[warn]") || line.startsWith("[stderr]") ? t.warn :
+                           line.startsWith("Compile") ? t.txtDim : t.txt,
                   }}>{line}</div>
                 ))
               )}
@@ -571,16 +575,10 @@ function getFileIcon(name) {
   return icons[ext] || "📄";
 }
 
-const BG = "#0A0E16";
-const BG2 = "#0F1420";
-const PANEL = "#131926";
-const LINE = "rgba(237,239,243,0.09)";
-const TXT = "#EDEFF3";
-const DIM = "#8A93A6";
-const FAINT = "#5C6478";
-const ORG = "#FF5A1F";
-
-const S = {
+const makeStyles = (t) => {
+  const BG = t.bg, BG2 = t.card, PANEL = t.surface, LINE = t.border;
+  const TXT = t.txt, DIM = t.txtDim, FAINT = t.txtDim, ORG = t.accent;
+  return {
   page: { height: "100vh", display: "flex", flexDirection: "column", background: BG, color: TXT, fontFamily: "Inter,sans-serif", overflow: "hidden" },
 
   // Top bar
@@ -593,17 +591,20 @@ const S = {
   topRight: { display: "flex", alignItems: "center", gap: 8 },
   backLink: { color: DIM, fontSize: 12, textDecoration: "none" },
   projectName: { fontFamily: "'Space Grotesk',sans-serif", fontSize: 14, fontWeight: 600 },
-  stackBadge: { fontSize: 10, fontWeight: 600, color: ORG, background: ORG + "18", padding: "2px 8px", borderRadius: 100 },
+  stackBadge: { fontSize: 10, fontWeight: 600, color: t.accentLink, background: ORG + "18", padding: "2px 8px", borderRadius: 100 },
   saveBtn: {
+    display: "inline-flex", alignItems: "center", gap: 5,
     background: "transparent", border: "1px solid " + LINE, color: TXT,
     padding: "5px 12px", borderRadius: 6, fontSize: 12, cursor: "pointer",
   },
   runBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    display: "inline-flex", alignItems: "center", gap: 5,
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "5px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
   },
   downloadBtn: {
-    background: "rgba(56,189,248,0.12)", color: "#38BDF8", border: "1px solid rgba(56,189,248,0.2)",
+    display: "inline-flex", alignItems: "center", gap: 5,
+    background: "rgba(56,189,248,0.12)", color: t.info, border: "1px solid rgba(56,189,248,0.2)",
     padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
   },
 
@@ -632,9 +633,9 @@ const S = {
   treeItemActive: { background: ORG + "18", color: TXT, borderRight: "2px solid " + ORG },
   treeIcon: { fontSize: 13, flexShrink: 0 },
   treeName: { flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  dirtyDot: { color: "#FFB238", fontSize: 10, flexShrink: 0 },
+  dirtyDot: { color: t.warn, fontSize: 10, flexShrink: 0 },
   treeDelBtn: {
-    background: "transparent", border: "none", color: "#F87171", fontSize: 14,
+    background: "transparent", border: "none", color: t.danger, fontSize: 14,
     cursor: "pointer", padding: 0, opacity: 0, flexShrink: 0, width: 16,
   },
   treeFolder: {
@@ -707,7 +708,9 @@ const S = {
     padding: "6px 14px", borderRadius: 6, fontSize: 12, cursor: "pointer",
   },
   goBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    display: "inline-flex", alignItems: "center", gap: 5,
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
   },
+  };
 };

@@ -2,20 +2,22 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import Icon from '../components/Icon';
 
-const S = {
-  page: { minHeight: '100vh', background: '#0a0a0f', color: '#e0e0e0', fontFamily: "'Inter',sans-serif", padding: '20px 40px' },
+const makeStyles = (t) => ({
+  page: { minHeight: '100vh', background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif", padding: '20px 40px' },
   header: { marginBottom: 40 },
-  backLink: { color: '#888', textDecoration: 'none', fontSize: 14 },
-  title: { fontSize: 28, fontWeight: 800, color: '#fff', marginTop: 8 },
-  subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
-  table: { width: '100%', borderCollapse: 'collapse', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' },
-  th: { textAlign: 'left', padding: '12px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1, color: '#5C6478', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.06)' },
-  td: { padding: '14px 16px', fontSize: 14, borderBottom: '1px solid rgba(255,255,255,0.04)' },
+  backLink: { color: t.txtDim, textDecoration: 'none', fontSize: 14 },
+  title: { fontSize: 28, fontWeight: 800, color: t.txt, marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 },
+  subtitle: { fontSize: 14, color: t.txtSec, marginTop: 4 },
+  table: { width: '100%', borderCollapse: 'collapse', background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, overflow: 'hidden' },
+  th: { textAlign: 'left', padding: '12px 16px', fontSize: 11, fontWeight: 600, letterSpacing: 1, color: t.txtDim, textTransform: 'uppercase', borderBottom: `1px solid ${t.border}` },
+  td: { padding: '14px 16px', fontSize: 14, borderBottom: `1px solid ${t.border}` },
   badge: { fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 6 },
-  loading: { textAlign: 'center', padding: 60, color: '#666' },
-  empty: { textAlign: 'center', padding: 60, color: '#5C6478' },
-};
+  loading: { textAlign: 'center', padding: 60, color: t.txtDim },
+  empty: { textAlign: 'center', padding: 60, color: t.txtDim },
+});
 
 const actionColors = {
   approve_user: { bg: 'rgba(62,207,142,0.12)', color: '#3ECF8E', label: 'Approved' },
@@ -26,6 +28,8 @@ const actionColors = {
 
 export default function AuditLog() {
   const { profile, signOut } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +54,7 @@ export default function AuditLog() {
     <div className="admin-page" style={S.page}>
       <div style={S.header}>
         <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
-        <h1 style={S.title}>📋 Audit Log</h1>
+        <h1 style={S.title}><Icon name="clock" size={26} /> Audit Log</h1>
         <p style={S.subtitle}>All admin actions across the platform</p>
       </div>
 
@@ -69,24 +73,24 @@ export default function AuditLog() {
           </thead>
           <tbody>
             {logs.map(log => {
-              const style = actionColors[log.action] || { bg: 'rgba(255,255,255,0.05)', color: '#888', label: log.action };
+              const style = actionColors[log.action] || { bg: t.card, color: t.txtDim, label: log.action };
               return (
                 <tr key={log.id}>
                   <td style={S.td}>
                     <span style={{ ...S.badge, background: style.bg, color: style.color }}>{style.label}</span>
                   </td>
                   <td style={S.td}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{log.profiles?.full_name || log.profiles?.email || 'System'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: t.txt }}>{log.profiles?.full_name || log.profiles?.email || 'System'}</div>
                   </td>
                   <td style={S.td}>
-                    <div style={{ fontSize: 13, color: '#aaa' }}>{log.details?.target_email || '—'}</div>
+                    <div style={{ fontSize: 13, color: t.txtSec }}>{log.details?.target_email || '—'}</div>
                   </td>
                   <td style={S.td}>
-                    <div style={{ fontSize: 12, color: '#888' }}>
+                    <div style={{ fontSize: 12, color: t.txtDim }}>
                       {log.action === 'assign_role' ? `Role → ${log.details?.new_role}` : log.action}
                     </div>
                   </td>
-                  <td style={{ ...S.td, fontSize: 12, color: '#666', whiteSpace: 'nowrap' }}>
+                  <td style={{ ...S.td, fontSize: 12, color: t.txtDim, whiteSpace: 'nowrap' }}>
                     {new Date(log.created_at).toLocaleString()}
                   </td>
                 </tr>

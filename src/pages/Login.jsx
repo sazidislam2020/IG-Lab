@@ -212,7 +212,7 @@ const makeStyles = (t) => ({
   },
   button: {
     background: "#FF6B2B",
-    color: "#fff",
+    color: t.accentInk, // ink label = 6.1:1 (white was 2.84:1 — fails AA)
     border: "none",
     borderRadius: 8,
     padding: "13px 20px",
@@ -232,11 +232,12 @@ const makeStyles = (t) => ({
     alignSelf: "flex-end",
     background: "none",
     border: "none",
-    color: "#FF6B2B",
+    color: t.accentLink,
     fontSize: 12.5,
     fontWeight: 500,
     cursor: "pointer",
-    padding: "4px 0 0",
+    padding: "6px 0 0",
+    minHeight: 32,
   },
   resetSent: {
     background: "rgba(62,207,142,0.1)",
@@ -249,7 +250,7 @@ const makeStyles = (t) => ({
     marginTop: 8,
   },
   link: {
-    color: "#FF6B2B",
+    color: t.accentLink,
     textDecoration: "none",
     fontWeight: 500,
   },

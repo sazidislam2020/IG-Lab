@@ -2,55 +2,59 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import Icon from '../components/Icon';
 
-const S = {
-  page: { minHeight: '100vh', background: '#0a0a0f', color: '#e0e0e0', fontFamily: "'Inter',sans-serif" },
-  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,14,22,0.92)', position: 'sticky', top: 0, zIndex: 100 },
+const makeStyles = (t) => ({
+  page: { minHeight: '100vh', background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif" },
+  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px', borderBottom: `1px solid ${t.border}`, background: t.surface, position: 'sticky', top: 0, zIndex: 100 },
   brand: { display: 'flex', alignItems: 'center', gap: 8, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 16 },
-  spark: { width: 9, height: 9, background: '#f97316', borderRadius: 2, transform: 'rotate(45deg)', boxShadow: '0 0 10px #f97316' },
+  spark: { width: 9, height: 9, background: t.accent, borderRadius: 2, transform: 'rotate(45deg)', boxShadow: '0 0 10px #f97316' },
   navRight: { display: 'flex', alignItems: 'center', gap: 16 },
-  signOutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.16)', color: '#e0e0e0', padding: '8px 16px', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
+  signOutBtn: { background: 'transparent', border: `1px solid ${t.borderLight}`, color: t.txt, padding: '8px 16px', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
   main: { maxWidth: 1180, margin: '0 auto', padding: '40px 32px' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: 800, color: '#fff' },
-  btn: { background: 'linear-gradient(135deg,#f97316,#ef4444)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' },
-  btnGhost: { background: 'transparent', color: '#888', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  btnDanger: { background: 'rgba(239,68,68,0.12)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
-  card: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 24, marginBottom: 16 },
+  title: { fontSize: 28, fontWeight: 800, color: t.txt },
+  btn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: `linear-gradient(135deg, ${t.accent}, #ef4444)`, color: t.accentInk, border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  btnGhost: { background: 'transparent', color: t.txtDim, border: `1px solid ${t.borderLight}`, borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  btnDanger: { background: 'rgba(239,68,68,0.12)', color: t.danger, border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+  card: { background: t.card, border: `1px solid ${t.border}`, borderRadius: 16, padding: 24, marginBottom: 16 },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: 700, color: '#fff' },
-  cardDesc: { fontSize: 14, color: '#888', marginBottom: 12 },
+  cardTitle: { fontSize: 18, fontWeight: 700, color: t.txt },
+  cardDesc: { fontSize: 14, color: t.txtDim, marginBottom: 12 },
   cardMeta: { display: 'flex', gap: 12, flexWrap: 'wrap' },
-  badge: { fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(249,115,22,0.12)', color: '#f97316' },
-  badgeBlue: { fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' },
+  badge: { fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(249,115,22,0.12)', color: t.accentLink },
+  badgeBlue: { fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(56,189,248,0.12)', color: t.info },
   // Modal
   modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
-  modal: { background: '#131926', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 32, width: '90%', maxWidth: 500 },
-  modalTitle: { fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 20 },
-  label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 6, marginTop: 16 },
-  input: { width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#e0e0e0', outline: 'none', boxSizing: 'border-box' },
-  textarea: { width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#e0e0e0', outline: 'none', minHeight: 80, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' },
-  select: { width: '100%', background: '#0a0a0f', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: '#e0e0e0', outline: 'none', boxSizing: 'border-box' },
+  modal: { background: t.card, border: `1px solid ${t.borderLight}`, borderRadius: 16, padding: 32, width: '90%', maxWidth: 500 },
+  modalTitle: { fontSize: 20, fontWeight: 700, color: t.txt, marginBottom: 20 },
+  label: { display: 'block', fontSize: 13, fontWeight: 600, color: t.txtDim, marginBottom: 6, marginTop: 16 },
+  input: { width: '100%', background: t.bg, border: `1px solid ${t.borderLight}`, borderRadius: 8, padding: '10px 14px', fontSize: 14, color: t.txt, outline: 'none', boxSizing: 'border-box' },
+  textarea: { width: '100%', background: t.bg, border: `1px solid ${t.borderLight}`, borderRadius: 8, padding: '10px 14px', fontSize: 14, color: t.txt, outline: 'none', minHeight: 80, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' },
+  select: { width: '100%', background: t.bg, border: `1px solid ${t.borderLight}`, borderRadius: 8, padding: '10px 14px', fontSize: 14, color: t.txt, outline: 'none', boxSizing: 'border-box' },
   modalActions: { display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 },
-  loading: { textAlign: 'center', padding: 60, color: '#666' },
+  loading: { textAlign: 'center', padding: 60, color: t.txtDim },
   tabs: { display: 'flex', gap: 8, marginBottom: 24 },
-  tab: { padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, color: '#888', transition: 'all 0.15s' },
-  tabActive: { background: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.3)', color: '#f97316' },
+  tab: { padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: t.card, border: `1px solid ${t.border}`, borderRadius: 8, color: t.txtDim, transition: 'all 0.15s' },
+  tabActive: { background: 'rgba(249,115,22,0.12)', borderColor: 'rgba(249,115,22,0.3)', color: t.accentLink },
   list: { marginTop: 16 },
-  listItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 8, marginBottom: 8 },
+  listItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: t.card, border: `1px solid ${t.border}`, borderRadius: 8, marginBottom: 8 },
   listItemInfo: { flex: 1 },
-  listItemTitle: { fontSize: 14, fontWeight: 600, color: '#fff' },
-  listItemMeta: { fontSize: 12, color: '#666', marginTop: 2 },
+  listItemTitle: { fontSize: 14, fontWeight: 600, color: t.txt },
+  listItemMeta: { fontSize: 12, color: t.txtDim, marginTop: 2 },
   btnSmall: { padding: '6px 14px', fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: 'pointer', border: 'none', marginLeft: 8 },
-  empty: { textAlign: 'center', padding: 40, color: '#5C6478', fontSize: 14 },
-};
+  empty: { textAlign: 'center', padding: 40, color: t.txtDim, fontSize: 14 },
+});
 
 const LANGUAGES = ['python', 'javascript', 'java', 'c', 'cpp', 'html', 'css'];
 
-const MODULE_ICONS = { live: '📡', classwork: '💻', homework: '📝', boss: '⚔️' };
+const MODULE_ICONS = { live: 'video', classwork: 'code', homework: 'check', boss: 'bolt' };
 const MODULE_TYPES = ['live', 'classwork', 'homework', 'boss'];
 
 export default function AdminCourses() {
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const { profile, signOut } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -316,7 +320,7 @@ export default function AdminCourses() {
   return (
     <div className="admin-page" style={S.page}>
       <nav style={S.nav}>
-        <Link to="/dashboard" style={{ ...S.brand, textDecoration: 'none', color: '#e0e0e0' }}>
+        <Link to="/dashboard" style={{ ...S.brand, textDecoration: 'none', color: t.txt }}>
           <span style={S.spark} /> IGNITE LAB
         </Link>
         <div style={S.navRight}>
@@ -331,7 +335,7 @@ export default function AdminCourses() {
         <div style={S.header}>
           <div>
             <h1 style={S.title}>Course Management</h1>
-            <p style={{ fontSize: 14, color: '#666', marginTop: 4 }}>Create and manage courses, levels, and tasks</p>
+            <p style={{ fontSize: 14, color: t.txtDim, marginTop: 4 }}>Create and manage courses, levels, and tasks</p>
           </div>
           <button onClick={() => openModal('course')} style={S.btn}>+ New Course</button>
         </div>
@@ -358,7 +362,7 @@ export default function AdminCourses() {
                           padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
                           cursor: 'pointer', border: 'none',
                           background: course.is_free ? 'rgba(74,222,128,0.18)' : 'rgba(249,115,22,0.18)',
-                          color: course.is_free ? '#4ADE80' : '#f97316',
+                          color: course.is_free ? t.success : t.accentLink,
                           transition: 'all 0.2s',
                         }}
                       >
@@ -376,20 +380,20 @@ export default function AdminCourses() {
                           transition: 'all 0.2s',
                         }}
                       >
-                        {course.certificate_enabled === false ? '🚫 No Cert' : '🎓 Certificate'}
+                        {course.certificate_enabled === false ? 'Certificates OFF' : 'Certificate ON'}
                       </button>
-                      <button onClick={() => openCertManager(course)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>🎓 Certs</button>
-                      <button onClick={() => openTeacherManager(course)} style={{ ...S.btnSmall, background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>👩‍🏫 Teachers</button>
+                      <button onClick={() => openCertManager(course)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: t.warn }}>Certs</button>
+                      <button onClick={() => openTeacherManager(course)} style={{ ...S.btnSmall, background: 'rgba(34,211,238,0.12)', color: t.info }}>Teachers</button>
                       <button onClick={() => { setSelectedCourse(course); fetchModules(course.id); }} style={{ ...S.btnSmall, background: 'rgba(62,207,142,0.12)', color: '#3ECF8E' }}>Open →</button>
-                      <button onClick={() => openModal('course', course)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' }}>Edit</button>
-                      <button onClick={() => deleteItem('courses', course.id, fetchCourses)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Delete</button>
+                      <button onClick={() => openModal('course', course)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: t.info }}>Edit</button>
+                      <button onClick={() => deleteItem('courses', course.id, fetchCourses)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: t.danger }}>Delete</button>
                     </div>
                   </div>
                   <div style={S.cardMeta}>
                     <span style={S.badge}>{course.course_modules?.[0]?.count || 0} modules</span>
                     <span style={{ ...S.badgeBlue }}>👥 {course.course_enrollments?.[0]?.count || 0} enrolled</span>
                     {course.is_free && (
-                      <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(74,222,128,0.12)', color: '#4ADE80' }}>🆓 Free</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 8, background: 'rgba(74,222,128,0.12)', color: t.success }}>Free</span>
                     )}
                   </div>
                 </div>
@@ -404,7 +408,7 @@ export default function AdminCourses() {
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <button onClick={() => setCertCourse(null)} style={S.btnGhost}>← Back to Courses</button>
-                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>🎓 Certificates — {certCourse.title}</span>
+                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: t.txt, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="award" size={17} /> Certificates — {certCourse.title}</span>
               </div>
               <button
                 onClick={() => toggleCourseCertificate(certCourse)}
@@ -416,10 +420,10 @@ export default function AdminCourses() {
                   color: certCourse.certificate_enabled === false ? '#94A3B8' : '#C084FC',
                 }}
               >
-                {certCourse.certificate_enabled === false ? '🚫 Certificates OFF' : '🎓 Certificates ON'}
+                {certCourse.certificate_enabled === false ? 'Certificates OFF' : 'Certificates ON'}
               </button>
             </div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: t.txtDim, marginBottom: 16 }}>
               When certificates are ON, every student who completes all tasks automatically earns the certificate.
               Blocking a student prevents their certificate and shows them your message instead.
             </div>
@@ -432,18 +436,18 @@ export default function AdminCourses() {
                 <div key={st.user_id} style={{ ...S.card, padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{st.name}</div>
-                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                        {st.cert ? `✅ Certificate earned ${new Date(st.cert.earned_at).toLocaleDateString()} (${st.cert.certificate_id})`
-                          : st.block ? `🚫 Blocked — "${st.block.reason}"`
+                      <div style={{ fontSize: 15, fontWeight: 600, color: t.txt }}>{st.name}</div>
+                      <div style={{ fontSize: 12, color: t.txtDim, marginTop: 2 }}>
+                        {st.cert ? `Certificate earned ${new Date(st.cert.earned_at).toLocaleDateString()} (${st.cert.certificate_id})`
+                          : st.block ? `Blocked — "${st.block.reason}"`
                           : '⏳ Course not completed yet'}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {st.block ? (
-                        <button onClick={() => unblockStudentCertificate(st.user_id)} style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: '#4ADE80' }}>Unblock</button>
+                        <button onClick={() => unblockStudentCertificate(st.user_id)} style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: t.success }}>Unblock</button>
                       ) : (
-                        <button onClick={() => blockStudentCertificate(st.user_id, st.name)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>🚫 Block</button>
+                        <button onClick={() => blockStudentCertificate(st.user_id, st.name)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: t.danger }}>Block</button>
                       )}
                       {st.cert && (
                         <button onClick={() => revokeCertificate(st.cert)} style={{ ...S.btnSmall, background: 'rgba(250,204,21,0.12)', color: '#FACC15' }}>Revoke</button>
@@ -462,10 +466,10 @@ export default function AdminCourses() {
             <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <button onClick={() => setTeachCourse(null)} style={S.btnGhost}>← Back to Courses</button>
-                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>👩‍🏫 Teachers — {teachCourse.title}</span>
+                <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: t.txt, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="users" size={17} /> Teachers — {teachCourse.title}</span>
               </div>
             </div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: t.txtDim, marginBottom: 16 }}>
               Assigned teachers only see the submissions, points, and progress of students in
               this course. Admins always keep full access.
             </div>
@@ -473,7 +477,7 @@ export default function AdminCourses() {
               <select
                 value={teachPick}
                 onChange={e => setTeachPick(e.target.value)}
-                style={{ background: '#0F1420', border: '1px solid rgba(255,255,255,0.16)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#e0e0e0', minWidth: 240 }}
+                style={{ background: t.card, border: `1px solid ${t.borderLight}`, borderRadius: 8, padding: '9px 12px', fontSize: 13, color: t.txt, minWidth: 240 }}
               >
                 <option value="">{teachCandidates.length ? 'Select a teacher…' : 'No more teachers available'}</option>
                 {teachCandidates.map(tc => (
@@ -497,10 +501,10 @@ export default function AdminCourses() {
                 <div key={row.id} style={{ ...S.card, padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                     <div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{row.full_name || 'Teacher'}</div>
-                      <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{row.email}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: t.txt }}>{row.full_name || 'Teacher'}</div>
+                      <div style={{ fontSize: 12, color: t.txtDim, marginTop: 2 }}>{row.email}</div>
                     </div>
-                    <button onClick={() => unassignTeacher(row.id)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Remove</button>
+                    <button onClick={() => unassignTeacher(row.id)} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: t.danger }}>Remove</button>
                   </div>
                 </div>
               ))
@@ -513,28 +517,28 @@ export default function AdminCourses() {
           <div>
             <div style={{ marginBottom: 20 }}>
               <button onClick={() => { setSelectedCourse(null); setModules([]); }} style={S.btnGhost}>← Back to Courses</button>
-              <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>{selectedCourse.title}</span>
+              <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: t.txt }}>{selectedCourse.title}</span>
             </div>
 
             {/* Free/Paid bulk controls */}
             {modules.length > 0 && (
               <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: '#888' }}>Quick Actions:</span>
+                <span style={{ fontSize: 13, color: t.txtDim }}>Quick Actions:</span>
                 <button
                   onClick={() => toggleAllFree(selectedCourse.id, true)}
                   disabled={toggling === 'all'}
-                  style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: '#4ADE80', fontSize: 12, padding: '6px 14px', opacity: toggling === 'all' ? 0.5 : 1 }}
+                  style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: t.success, fontSize: 12, padding: '6px 14px', opacity: toggling === 'all' ? 0.5 : 1 }}
                 >
                   🆓 Make All Free
                 </button>
                 <button
                   onClick={() => toggleAllFree(selectedCourse.id, false)}
                   disabled={toggling === 'all'}
-                  style={{ ...S.btnSmall, background: 'rgba(249,115,22,0.12)', color: '#f97316', fontSize: 12, padding: '6px 14px', opacity: toggling === 'all' ? 0.5 : 1 }}
+                  style={{ ...S.btnSmall, background: 'rgba(249,115,22,0.12)', color: t.accentLink, fontSize: 12, padding: '6px 14px', opacity: toggling === 'all' ? 0.5 : 1 }}
                 >
-                  🔒 Lock All (Paid)
+                  Lock All (Paid)
                 </button>
-                <span style={{ fontSize: 12, color: '#666' }}>
+                <span style={{ fontSize: 12, color: t.txtDim }}>
                   {modules.filter(m => m.is_free).length} free / {modules.filter(m => !m.is_free).length} paid
                 </span>
               </div>
@@ -551,13 +555,13 @@ export default function AdminCourses() {
                   <div style={S.cardHeader}>
                     <div>
                       <div style={S.cardTitle}>
-                        {MODULE_ICONS[mod.module_type] || '📚'} {mod.title}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name={MODULE_ICONS[mod.module_type] || 'book'} size={15} /> {mod.title}</span>
                       </div>
                       <div style={S.cardMeta}>
                         <span style={S.badge}>{mod.module_type}</span>
                         <span style={S.badgeBlue}>+{mod.points_value} pts</span>
-                        <span style={{ fontSize: 12, color: '#666' }}>Order: {mod.module_order}</span>
-                        <span style={{ fontSize: 12, color: '#666' }}>{mod.module_tasks?.[0]?.count || 0} tasks</span>
+                        <span style={{ fontSize: 12, color: t.txtDim }}>Order: {mod.module_order}</span>
+                        <span style={{ fontSize: 12, color: t.txtDim }}>{mod.module_tasks?.[0]?.count || 0} tasks</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -571,7 +575,7 @@ export default function AdminCourses() {
                           cursor: toggling === mod.id ? 'wait' : 'pointer',
                           border: 'none',
                           background: mod.is_free ? 'rgba(74,222,128,0.18)' : 'rgba(249,115,22,0.18)',
-                          color: mod.is_free ? '#4ADE80' : '#f97316',
+                          color: mod.is_free ? t.success : t.accentLink,
                           transition: 'all 0.2s',
                           opacity: toggling === mod.id ? 0.6 : 1,
                         }}
@@ -579,8 +583,8 @@ export default function AdminCourses() {
                         {mod.is_free ? '🆓 Free' : '💳 Paid'}
                       </button>
                       <button onClick={() => { setSelectedModule(mod); fetchTasks(mod.id); }} style={{ ...S.btnSmall, background: 'rgba(62,207,142,0.12)', color: '#3ECF8E' }}>Tasks →</button>
-                      <button onClick={() => openModal('module', mod)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' }}>Edit</button>
-                      <button onClick={() => deleteItem('course_modules', mod.id, () => fetchModules(selectedCourse.id))} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Delete</button>
+                      <button onClick={() => openModal('module', mod)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: t.info }}>Edit</button>
+                      <button onClick={() => deleteItem('course_modules', mod.id, () => fetchModules(selectedCourse.id))} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: t.danger }}>Delete</button>
                     </div>
                   </div>
                 </div>
@@ -594,10 +598,10 @@ export default function AdminCourses() {
           <div>
             <div style={{ marginBottom: 20 }}>
               <button onClick={() => { setSelectedModule(null); setTasks([]); }} style={S.btnGhost}>← Back to Modules</button>
-              <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: '#fff' }}>
-                {MODULE_ICONS[selectedModule.module_type] || '📚'} {selectedModule.title}
+              <span style={{ marginLeft: 16, fontSize: 18, fontWeight: 700, color: t.txt, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Icon name={MODULE_ICONS[selectedModule.module_type] || 'book'} size={17} /> {selectedModule.title}
               </span>
-              <span style={{ marginLeft: 12, fontSize: 12, padding: '4px 10px', borderRadius: 100, background: selectedModule.is_free ? 'rgba(74,222,128,0.18)' : 'rgba(249,115,22,0.18)', color: selectedModule.is_free ? '#4ADE80' : '#f97316', fontWeight: 700 }}>
+              <span style={{ marginLeft: 12, fontSize: 12, padding: '4px 10px', borderRadius: 100, background: selectedModule.is_free ? 'rgba(74,222,128,0.18)' : 'rgba(249,115,22,0.18)', color: selectedModule.is_free ? t.success : t.accentLink, fontWeight: 700 }}>
                 {selectedModule.is_free ? '🆓 Free' : '💳 Paid'}
               </span>
             </div>
@@ -615,15 +619,15 @@ export default function AdminCourses() {
                       <div style={S.cardMeta}>
                         <span style={S.badge}>{mt.tasks?.language || '?'}</span>
                         <span style={S.badgeBlue}>+{mt.tasks?.points_value || 0} pts</span>
-                        <span style={{ fontSize: 12, color: '#666' }}>Order: {mt.task_order}</span>
+                        <span style={{ fontSize: 12, color: t.txtDim }}>Order: {mt.task_order}</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => openModal('task', mt)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: '#38BDF8' }}>Edit</button>
-                      <button onClick={() => deleteItem('module_tasks', mt.id, () => fetchTasks(selectedModule.id))} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>Delete</button>
+                      <button onClick={() => openModal('task', mt)} style={{ ...S.btnSmall, background: 'rgba(56,189,248,0.12)', color: t.info }}>Edit</button>
+                      <button onClick={() => deleteItem('module_tasks', mt.id, () => fetchTasks(selectedModule.id))} style={{ ...S.btnSmall, background: 'rgba(239,68,68,0.12)', color: t.danger }}>Delete</button>
                     </div>
                   </div>
-                  <div style={{ fontSize: 13, color: '#888', marginTop: 8, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{(mt.tasks?.prompt || '').slice(0, 200)}{(mt.tasks?.prompt || '').length > 200 ? '...' : ''}</div>
+                  <div style={{ fontSize: 13, color: t.txtDim, marginTop: 8, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{(mt.tasks?.prompt || '').slice(0, 200)}{(mt.tasks?.prompt || '').length > 200 ? '...' : ''}</div>
                 </div>
               ))
             )}
@@ -661,7 +665,7 @@ export default function AdminCourses() {
             <input style={S.input} value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Hello World" />
             <label style={S.label}>Type</label>
             <select style={S.select} value={form.module_type || 'classwork'} onChange={e => setForm({ ...form, module_type: e.target.value })}>
-              {MODULE_TYPES.map(t => <option key={t} value={t}>{MODULE_ICONS[t]} {t}</option>)}
+              {MODULE_TYPES.map(ty => <option key={ty} value={ty}>{ty}</option>)}
             </select>
             <label style={S.label}>Description</label>
             <textarea style={S.textarea} value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="What does this module cover?" />

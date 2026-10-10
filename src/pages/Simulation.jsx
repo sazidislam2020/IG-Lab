@@ -8,6 +8,8 @@ import {
   resetRobot,
 } from "../lib/robotArm";
 import { fkTip, fkWrist, ikTip } from "../lib/armKinematics";
+import { useTheme } from "../contexts/ThemeContext";
+import Icon from "../components/Icon";
 
 // Expose kinematics for testing / script use
 window.__fkTip = fkTip;
@@ -17,33 +19,33 @@ let RAPIER = null;
 let physicsWorld = null;
 let scriptRunning = false; // module-level: shared by runCode and the animation loop
 
-const S = {
-  page: { height: "100vh", display: "flex", flexDirection: "column", background: "#2a3548", color: "#e0e0e0", fontFamily: "'Inter',sans-serif", overflow: "hidden" },
-  header: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 24px", background: "#1e2836", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 },
+const makeStyles = (t) => ({
+  page: { height: "100vh", display: "flex", flexDirection: "column", background: t.bg, color: t.txt, fontFamily: "'Inter',sans-serif", overflow: "hidden" },
+  header: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 24px", background: t.surface, borderBottom: `1px solid ${t.border}`, flexShrink: 0 },
   headerLeft: { display: "flex", alignItems: "center", gap: 16 },
-  backLink: { color: "#aaa", textDecoration: "none", fontSize: 13 },
-  title: { fontSize: 16, fontWeight: 600 },
+  backLink: { color: t.txtDim, textDecoration: "none", fontSize: 13 },
+  title: { fontSize: 16, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 8 },
   headerRight: { display: "flex", alignItems: "center", gap: 12 },
   split: { flex: 1, display: "flex", overflow: "hidden" },
-  viewportWrap: { flex: 1, display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,255,255,0.08)", position: "relative" },
-  viewport: { flex: 1, background: "#2a3548" },
+  viewportWrap: { flex: 1, display: "flex", flexDirection: "column", borderRight: `1px solid ${t.border}`, position: "relative" },
+  viewport: { flex: 1, background: "#2a3548" }, // 3D scene color — intentionally fixed
   viewportOverlay: { position: "absolute", bottom: 16, left: 16, display: "flex", gap: 8, flexWrap: "wrap" },
-  overlayBadge: { background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "#ccc", backdropFilter: "blur(4px)" },
-  rightPanel: { width: "42%", display: "flex", flexDirection: "column", background: "#222838" },
-  tabs: { display: "flex", borderBottom: "1px solid rgba(255,255,255,0.08)" },
-  tab: { padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#666", background: "transparent", border: "none", borderBottom: "2px solid transparent" },
-  tabActive: { color: "#f97316", borderBottom: "2px solid #f97316" },
+  overlayBadge: { background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "#eee", backdropFilter: "blur(4px)" },
+  rightPanel: { width: "42%", display: "flex", flexDirection: "column", background: t.card },
+  tabs: { display: "flex", borderBottom: `1px solid ${t.border}` },
+  tab: { padding: "8px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", color: t.txtDim, background: "transparent", border: "none", borderBottom: "2px solid transparent" },
+  tabActive: { color: t.accentLink, borderBottom: `2px solid ${t.accent}` },
   controls: { flex: 1, overflow: "auto", padding: 16 },
   controlGroup: { marginBottom: 14 },
-  controlLabel: { fontSize: 12, fontWeight: 600, color: "#999", marginBottom: 6, display: "flex", justifyContent: "space-between" },
-  slider: { width: "100%", accentColor: "#f97316", cursor: "pointer" },
-  runBtn: { background: "linear-gradient(135deg,#f97316,#ef4444)", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" },
-  select: { background: "#1a1f2e", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 10px", fontSize: 12, color: "#e0e0e0" },
+  controlLabel: { fontSize: 12, fontWeight: 600, color: t.txtDim, marginBottom: 6, display: "flex", justifyContent: "space-between" },
+  slider: { width: "100%", accentColor: t.accent, cursor: "pointer" },
+  runBtn: { display: "inline-flex", alignItems: "center", gap: 6, background: `linear-gradient(135deg, ${t.accent}, #ef4444)`, color: t.accentInk, border: "none", borderRadius: 8, padding: "8px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer" },
+  select: { background: t.bg, border: `1px solid ${t.borderLight}`, borderRadius: 6, padding: "6px 10px", fontSize: 12, color: t.txt },
   output: { flex: 1, overflow: "auto", padding: 16, fontFamily: "'JetBrains Mono',monospace", fontSize: 12, lineHeight: 1.7 },
-  outputLine: { whiteSpace: "pre-wrap", color: "#ccc" },
-  actionBtn: { background: "rgba(249,115,22,0.15)", color: "#f97316", border: "1px solid rgba(249,115,22,0.3)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
-  actionBtnBlue: { background: "rgba(56,189,248,0.15)", color: "#38BDF8", border: "1px solid rgba(56,189,248,0.3)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
-};
+  outputLine: { whiteSpace: "pre-wrap", color: t.txtSec },
+  actionBtn: { background: "rgba(249,115,22,0.15)", color: t.accentLink, border: "1px solid rgba(249,115,22,0.3)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+  actionBtnBlue: { background: "rgba(56,189,248,0.15)", color: t.info, border: "1px solid rgba(56,189,248,0.3)", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+});
 
 const ROBOT_SCRIPTS = {
   wave: `// Wave Animation
@@ -70,7 +72,7 @@ async function pickAndPlace() {
   robot.log("Step 1: Locating target object...");
   const obj = robot.findObject();
   if (!obj) {
-    robot.log("❌ No reachable object found!");
+    robot.log("[error] No reachable object found!");
     return;
   }
   robot.log("Target: " + obj.name + " at (" + obj.x.toFixed(2) + ", " + obj.y.toFixed(2) + ", " + obj.z.toFixed(2) + ")");
@@ -110,7 +112,7 @@ async function pickAndPlace() {
 
   robot.log("Step 11: Return home...");
   await robot.home();
-  robot.log("✅ Complete!");
+  robot.log("[ok] Complete!");
 }
 pickAndPlace();`,
 
@@ -127,6 +129,8 @@ goHome();`,
 const TABLE_Y = 0.06;
 
 export default function Simulation() {
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const canvasRef = useRef(null);
   const sceneRef = useRef(null);
   const robotRef = useRef(null);
@@ -743,9 +747,9 @@ export default function Simulation() {
       const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
       const fn = new AsyncFunction("robot", codeRef.current);
       await fn(robotAPI);
-      if (robotAPI.logs.length === 0) robotAPI.log("✅ Done!");
+      if (robotAPI.logs.length === 0) robotAPI.log("[ok] Done!");
     } catch (err) {
-      robotAPI.log("❌ Error: " + err.message);
+      robotAPI.log("[error] " + err.message);
     }
     setIsRunning(false);
     isRunningRef.current = false;
@@ -773,7 +777,7 @@ export default function Simulation() {
       <div style={S.header}>
         <div style={S.headerLeft}>
           <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
-          <span style={S.title}>🤖 6-DOF Robot Arm + Physics</span>
+          <span style={S.title}><Icon name="settings" size={16} /> 6-DOF Robot Arm + Physics</span>
         </div>
         <div style={S.headerRight}>
           <select style={S.select} value={code === ROBOT_SCRIPTS.wave ? "wave" : code === ROBOT_SCRIPTS.pickAndPlace ? "pickAndPlace" : "custom"} onChange={(e) => { if (ROBOT_SCRIPTS[e.target.value]) setCode(ROBOT_SCRIPTS[e.target.value]); }}>
@@ -782,7 +786,7 @@ export default function Simulation() {
             <option value="home">Go Home</option>
             <option value="custom">Custom Script</option>
           </select>
-          <button onClick={runCode} disabled={isRunning} style={S.runBtn}>{isRunning ? "⏳..." : "▶ Run"}</button>
+          <button onClick={runCode} disabled={isRunning} style={S.runBtn}>{isRunning ? "Running..." : <><Icon name="play" size={13} /> Run</>}</button>
         </div>
       </div>
 
@@ -833,19 +837,19 @@ export default function Simulation() {
               ))}
 
               <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-                <button onClick={resetJoints} style={S.actionBtnBlue}>🔄 Reset</button>
+                <button onClick={resetJoints} style={S.actionBtnBlue}>Reset</button>
               </div>
 
-              <div style={{ marginTop: 20, padding: 14, background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 8 }}>💡 How to pick up objects</div>
-                <div style={{ fontSize: 11, color: "#888", lineHeight: 1.8 }}>
-                  <div>1. Set <b style={{color:"#38BDF8"}}>Joint 1</b> to rotate toward objects</div>
-                  <div>2. Set <b style={{color:"#38BDF8"}}>Joint 2 = -75°</b> to bend arm DOWN</div>
-                  <div>3. Set <b style={{color:"#A78BFA"}}>Joint 3 = -60°</b> to lower gripper</div>
-                  <div>4. Set <b style={{color:"#22D3EE"}}>Joint 7 = 100%</b> to open claw</div>
-                  <div>5. Position near object, then set <b style={{color:"#22D3EE"}}>Joint 7 = 0%</b></div>
+              <div style={{ marginTop: 20, padding: 14, background: t.card, borderRadius: 8, border: `1px solid ${t.border}` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: t.txt, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}><Icon name="bolt" size={14} /> How to pick up objects</div>
+                <div style={{ fontSize: 11, color: t.txtSec, lineHeight: 1.8 }}>
+                  <div>1. Set <b style={{color:t.info}}>Joint 1</b> to rotate toward objects</div>
+                  <div>2. Set <b style={{color:t.info}}>Joint 2 = -75°</b> to bend arm DOWN</div>
+                  <div>3. Set <b style={{color:t.violet}}>Joint 3 = -60°</b> to lower gripper</div>
+                  <div>4. Set <b style={{color:t.info}}>Joint 7 = 100%</b> to open claw</div>
+                  <div>5. Position near object, then set <b style={{color:t.info}}>Joint 7 = 0%</b></div>
                   <div>6. Object will be attracted and grabbed!</div>
-                  <div>7. Use <b style={{color:"#22D3EE"}}>Joint 7 = 100%</b> to release</div>
+                  <div>7. Use <b style={{color:t.info}}>Joint 7 = 100%</b> to release</div>
                 </div>
               </div>
             </div>
@@ -862,10 +866,10 @@ export default function Simulation() {
           {activeTab === "output" && (
             <div style={S.output}>
               {output.length === 0 ? (
-                <div style={{ color: "#666", textAlign: "center", marginTop: 60, fontSize: 13 }}>Click <strong>▶ Run</strong> to execute</div>
+                <div style={{ color: t.txtDim, textAlign: "center", marginTop: 60, fontSize: 13 }}>Click <strong>Run</strong> to execute</div>
               ) : (
                 output.map((line, i) => (
-                  <div key={i} style={{ ...S.outputLine, color: line.startsWith("❌") ? "#F87171" : line.startsWith("✅") ? "#3ECF8E" : "#ccc" }}>{line}</div>
+                  <div key={i} style={{ ...S.outputLine, color: line.startsWith("[error]") ? t.danger : line.startsWith("[ok]") ? t.success : t.txtSec }}>{line}</div>
                 ))
               )}
             </div>

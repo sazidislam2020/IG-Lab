@@ -22,6 +22,7 @@ const T = {
   accent: "#FF6B2B",
   accentLight: "#FF8A50",
   accentDark: "#E85D1A",
+  accentInk: "#18181B", // label on orange → 4.9–6.1:1 (white was 2.4–2.8:1)
   cyan: "#22D3EE",
   green: "#4ADE80",
   gold: "#FACC15",
@@ -147,7 +148,7 @@ function Nav({ S, TC }) {
               <a key={l} href={`#${l.toLowerCase()}`} style={{ fontFamily: T.fontBody, fontSize: 13, fontWeight: 500, color: TC.txtSec, textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color 0.2s", whiteSpace: "nowrap" }}>{l}</a>
             ))}
             <Link to="/login" style={{ fontFamily: T.fontBody, fontSize: 13, fontWeight: 500, color: TC.txtSec, textDecoration: "none", padding: "8px 14px", borderRadius: 8, whiteSpace: "nowrap" }}>Sign in</Link>
-            <Link to="/signup" style={{ fontFamily: T.fontBody, fontSize: 13, fontWeight: 600, color: "#fff", background: T.accent, padding: "8px 18px", borderRadius: 999, textDecoration: "none", marginLeft: 4, whiteSpace: "nowrap", transition: "all 0.3s " + T.ease }}>Get Started</Link>
+            <Link to="/signup" style={{ fontFamily: T.fontBody, fontSize: 13, fontWeight: 600, color: T.accentInk, background: T.accent, padding: "8px 18px", borderRadius: 999, textDecoration: "none", marginLeft: 4, whiteSpace: "nowrap", transition: "all 0.3s " + T.ease }}>Get Started</Link>
             <button onClick={toggleTheme} style={{ width: 32, height: 32, borderRadius: 8, background: "transparent", border: `1px solid ${TC.border}`, color: TC.txtSec, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 4, transition: "all 0.2s" }} title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
               {isDark ? (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -169,7 +170,7 @@ function Nav({ S, TC }) {
             {["Features", "Pricing"].map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 600, color: TC.txtSec, textDecoration: "none", padding: "12px 24px" }} onClick={() => setMobileOpen(false)}>{l}</a>
             ))}
-            <Link to="/signup" style={{ fontFamily: T.fontDisplay, fontSize: 18, fontWeight: 700, color: "#fff", background: T.accent, padding: "14px 40px", borderRadius: 999, textDecoration: "none", marginTop: 16 }} onClick={() => setMobileOpen(false)}>Get Started</Link>
+            <Link to="/signup" style={{ fontFamily: T.fontDisplay, fontSize: 18, fontWeight: 700, color: T.accentInk, background: T.accent, padding: "14px 40px", borderRadius: 999, textDecoration: "none", marginTop: 16 }} onClick={() => setMobileOpen(false)}>Get Started</Link>
           </div>
         </div>
       )}
@@ -228,7 +229,7 @@ function Hero({ S, TC }) {
 
           <Reveal delay={3}>
             <div className="cta-buttons" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
-              <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.fontBody, fontSize: 16, fontWeight: 600, color: "#fff", background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "16px 32px", borderRadius: 12, textDecoration: "none", transition: "all 0.4s " + T.ease, boxShadow: `0 0 24px ${T.accent}30, 0 4px 16px rgba(0,0,0,0.4)` }}>
+              <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.fontBody, fontSize: 16, fontWeight: 600, color: T.accentInk, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "16px 32px", borderRadius: 12, textDecoration: "none", transition: "all 0.4s " + T.ease, boxShadow: `0 0 24px ${T.accent}30, 0 4px 16px rgba(0,0,0,0.4)` }}>
                 {S.hero_cta_text}
               </Link>
               <a href="#features" style={{ display: "inline-flex", alignItems: "center", fontFamily: T.fontBody, fontSize: 16, fontWeight: 500, color: c.txtSec, padding: "16px 32px", borderRadius: 12, textDecoration: "none", border: `1px solid ${c.border}`, transition: "all 0.3s" }}>
@@ -434,7 +435,7 @@ function Pricing({ S, TC }) {
               onMouseEnter={e => { if (!p.popular) e.currentTarget.style.borderColor = p.accent + "40"; }}
               onMouseLeave={e => { if (!p.popular) e.currentTarget.style.borderColor = c.border; }}
             >
-              {p.popular && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", fontFamily: T.fontMono, fontSize: 10, fontWeight: 600, color: "#fff", background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "4px 14px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>}
+              {p.popular && <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", fontFamily: T.fontMono, fontSize: 10, fontWeight: 600, color: T.accentInk, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "4px 14px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Most Popular</div>}
               <div style={{ fontFamily: T.fontDisplay, fontSize: 13, fontWeight: 600, color: p.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>{p.name}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 20 }}>
                 <span style={{ fontFamily: T.fontDisplay, fontSize: 36, fontWeight: 700, color: c.txt, letterSpacing: "-0.03em" }}>{p.price}</span>
@@ -474,7 +475,7 @@ function CTA({ S, TC }) {
           <p style={{ fontFamily: T.fontBody, fontSize: 17, lineHeight: 1.6, color: c.txtSec, maxWidth: 440, margin: "0 auto 36px" }}>
             {S.cta_subtitle}
           </p>
-          <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", fontFamily: T.fontBody, fontSize: 17, fontWeight: 600, color: "#fff", background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "18px 40px", borderRadius: 12, textDecoration: "none", boxShadow: `0 0 24px ${T.accent}30`, transition: "all 0.4s " + T.ease, animation: "pulseGlow 3s ease-in-out infinite" }}>
+          <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", fontFamily: T.fontBody, fontSize: 17, fontWeight: 600, color: T.accentInk, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "18px 40px", borderRadius: 12, textDecoration: "none", boxShadow: `0 0 24px ${T.accent}30`, transition: "all 0.4s " + T.ease, animation: "pulseGlow 3s ease-in-out infinite" }}>
             {S.cta_button_text}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8 }}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </Link>

@@ -7,6 +7,9 @@
  * discouraged with a CSS rule that hides content when printing.
  */
 
+// NOTE: intentionally theme-independent. The certificate is a branded
+// "plaque" artifact (dark paper + Ignite orange border) that keeps the same
+// design in light and dark mode — similar to a fixed 3D viewport color.
 const COLORS = {
   bgDark: "#0A0E16",
   accent: "#FF6B2B",

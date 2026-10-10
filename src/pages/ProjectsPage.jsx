@@ -3,9 +3,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { TEMPLATES } from "../lib/projectTemplates";
+import { useTheme } from "../contexts/ThemeContext";
+import Icon from "../components/Icon";
 
 export default function ProjectsPage() {
   const { profile } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +94,7 @@ export default function ProjectsPage() {
       <nav style={S.nav}>
         <div style={S.navLeft}>
           <Link to="/dashboard" style={S.backLink}>← Dashboard</Link>
-          <span style={S.brand}>📂 My Projects</span>
+          <span style={S.brand}><Icon name="folder" size={18} /> My Projects</span>
         </div>
         <button onClick={() => setShowCreate(true)} style={S.createBtn}>
           + New Project
@@ -102,9 +106,9 @@ export default function ProjectsPage() {
           <div style={S.loading}>Loading projects...</div>
         ) : projects.length === 0 ? (
           <div style={S.empty}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📂</div>
+            <div style={{ fontSize: 48, marginBottom: 16, display: "flex", justifyContent: "center", color: t.accent }}><Icon name="folder" size={44} /></div>
             <h2 style={{ fontSize: 20, marginBottom: 8 }}>No projects yet</h2>
-            <p style={{ color: "#8A93A6", marginBottom: 24 }}>
+            <p style={{ color: t.txtDim, marginBottom: 24 }}>
               Create your first project to start coding!
             </p>
             <button onClick={() => setShowCreate(true)} style={S.createBtn}>
@@ -121,8 +125,8 @@ export default function ProjectsPage() {
               >
                 <div style={S.cardHeader}>
                   <span style={S.cardIcon}>{TEMPLATES[p.stack]?.icon || "📄"}</span>
-                  <button onClick={(e) => deleteProject(p.id, e)} style={S.deleteBtn} title="Delete">
-                    🗑
+                  <button onClick={(e) => deleteProject(p.id, e)} style={S.deleteBtn} title="Delete" aria-label="Delete project">
+                    <Icon name="x" size={16} />
                   </button>
                 </div>
                 <h3 style={S.cardTitle}>{p.name}</h3>
@@ -168,7 +172,7 @@ export default function ProjectsPage() {
                   >
                     <div style={{ fontSize: 28, marginBottom: 6 }}>{tmpl.icon}</div>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{tmpl.name}</div>
-                    <div style={{ fontSize: 11, color: "#8A93A6", marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: t.txtDim, marginTop: 2 }}>
                       {tmpl.description}
                     </div>
                   </div>
@@ -198,50 +202,44 @@ export default function ProjectsPage() {
   );
 }
 
-const BG = "#0A0E16";
-const BG2 = "#0F1420";
-const PANEL = "#131926";
-const LINE = "rgba(237,239,243,0.09)";
-const TXT = "#EDEFF3";
-const DIM = "#8A93A6";
-const ORG = "#FF5A1F";
-
-const S = {
-  page: { minHeight: "100vh", background: BG, color: TXT, fontFamily: "Inter,sans-serif" },
+const makeStyles = (t) => {
+  const ORG = t.accent;
+  return {
+  page: { minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "Inter,sans-serif" },
   nav: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "16px 32px", borderBottom: "1px solid " + LINE, background: PANEL,
+    padding: "16px 32px", borderBottom: "1px solid " + t.border, background: t.surface,
     position: "sticky", top: 0, zIndex: 100,
   },
   navLeft: { display: "flex", alignItems: "center", gap: 16 },
-  backLink: { color: DIM, textDecoration: "none", fontSize: 13 },
-  brand: { fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700 },
+  backLink: { color: t.txtDim, textDecoration: "none", fontSize: 13 },
+  brand: { fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 },
   createBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "8px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
   },
   main: { maxWidth: 1100, margin: "0 auto", padding: "48px 32px" },
-  loading: { textAlign: "center", padding: 60, color: DIM },
-  empty: { textAlign: "center", padding: 80, color: TXT },
+  loading: { textAlign: "center", padding: 60, color: t.txtDim },
+  empty: { textAlign: "center", padding: 80, color: t.txt },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 },
   card: {
-    background: PANEL, border: "1px solid " + LINE, borderRadius: 12,
+    background: t.card, border: "1px solid " + t.border, borderRadius: 12,
     padding: "20px 22px", cursor: "pointer", transition: "border-color 0.2s",
   },
   cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   cardIcon: { fontSize: 28 },
   deleteBtn: {
-    background: "transparent", border: "none", color: "#F87171", fontSize: 16,
-    cursor: "pointer", padding: 4, opacity: 0.5,
+    background: "transparent", border: "none", color: t.danger, fontSize: 16,
+    cursor: "pointer", padding: 4, opacity: 0.5, display: "flex",
   },
   cardTitle: { fontSize: 16, fontWeight: 600, marginBottom: 4 },
-  cardDesc: { fontSize: 13, color: DIM, lineHeight: 1.5, marginBottom: 12 },
+  cardDesc: { fontSize: 13, color: t.txtDim, lineHeight: 1.5, marginBottom: 12 },
   cardMeta: { display: "flex", alignItems: "center", justifyContent: "space-between" },
   stackBadge: {
-    fontSize: 11, fontWeight: 600, color: ORG, background: ORG + "18",
+    fontSize: 11, fontWeight: 600, color: t.accentLink, background: ORG + "18",
     padding: "3px 10px", borderRadius: 100,
   },
-  dateText: { fontSize: 11, color: "#5C6478" },
+  dateText: { fontSize: 11, color: t.txtDim },
 
   // Modal
   modalOverlay: {
@@ -249,30 +247,31 @@ const S = {
     alignItems: "center", justifyContent: "center", zIndex: 200,
   },
   modal: {
-    background: PANEL, border: "1px solid " + LINE, borderRadius: 16,
+    background: t.card, border: "1px solid " + t.border, borderRadius: 16,
     padding: 32, width: "90%", maxWidth: 560, maxHeight: "85vh", overflow: "auto",
   },
   modalTitle: { fontSize: 20, fontWeight: 700, marginBottom: 24 },
   field: { marginBottom: 20 },
-  label: { display: "block", fontSize: 13, fontWeight: 600, color: DIM, marginBottom: 8 },
+  label: { display: "block", fontSize: 13, fontWeight: 600, color: t.txtDim, marginBottom: 8 },
   input: {
-    width: "100%", padding: "10px 14px", fontSize: 14, background: BG,
-    border: "1px solid " + LINE, borderRadius: 8, color: TXT, outline: "none",
+    width: "100%", padding: "10px 14px", fontSize: 14, background: t.bg,
+    border: "1px solid " + t.border, borderRadius: 8, color: t.txt, outline: "none",
     boxSizing: "border-box",
   },
   templateGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 },
   templateCard: {
-    background: BG, border: "2px solid " + LINE, borderRadius: 10, padding: "14px 10px",
+    background: t.bg, border: "2px solid " + t.border, borderRadius: 10, padding: "14px 10px",
     textAlign: "center", cursor: "pointer", transition: "border-color 0.15s",
   },
   templateCardActive: { borderColor: ORG },
   modalActions: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 },
   cancelBtn: {
-    background: "transparent", border: "1px solid " + LINE, color: TXT,
+    background: "transparent", border: "1px solid " + t.border, color: t.txt,
     padding: "8px 18px", borderRadius: 8, fontSize: 13, cursor: "pointer",
   },
   goBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "8px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
   },
+  };
 };

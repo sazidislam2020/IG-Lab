@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useTheme } from "../contexts/ThemeContext";
+import Icon from "../components/Icon";
 
 export default function LiveClassRoom() {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { colors: t } = useTheme();
+  const S = makeStyles(t);
   const [cls, setCls] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
@@ -138,9 +142,9 @@ export default function LiveClassRoom() {
     return (
       <div style={S.page}>
         <div style={S.center}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
+          <div style={{ fontSize: 48, marginBottom: 16, display: "flex", justifyContent: "center", color: t.danger }}><Icon name="alert" size={44} /></div>
           <h2>Error</h2>
-          <p style={{ color: "#8A93A6", maxWidth: 400, lineHeight: 1.6, marginBottom: 16 }}>{error}</p>
+          <p style={{ color: t.txtDim, maxWidth: 400, lineHeight: 1.6, marginBottom: 16 }}>{error}</p>
           <button onClick={() => navigate("/classes")} style={S.backBtn}>← Back to Classes</button>
         </div>
       </div>
@@ -156,52 +160,52 @@ export default function LiveClassRoom() {
       <div style={S.page}>
         <div style={S.lobby}>
           <div style={S.lobbyCard}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📡</div>
+            <div style={{ fontSize: 48, marginBottom: 16, display: "flex", justifyContent: "center", color: t.accent }}><Icon name="video" size={44} /></div>
             <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{cls.title}</h1>
             {cls.description && (
-              <p style={{ color: DIM, fontSize: 14, marginBottom: 16 }}>{cls.description}</p>
+              <p style={{ color: t.txtDim, fontSize: 14, marginBottom: 16 }}>{cls.description}</p>
             )}
 
             {hasLink ? (
               <div style={{
-                background: "#10B98118", border: "1px solid #10B98140",
-                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#6EE7B7",
+                background: "rgba(16,185,129,0.09)", border: "1px solid rgba(16,185,129,0.25)",
+                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: t.success,
                 marginBottom: 16, textAlign: "left",
               }}>
-                ✅ <strong>Google Meet link ready</strong> — opens when you join
+                <strong>Meeting link ready</strong> — opens when you join
               </div>
             ) : (
               <div style={{
-                background: "#F59E0B18", border: "1px solid #F59E0B40",
-                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#FCD34D",
+                background: "rgba(245,158,11,0.09)", border: "1px solid rgba(245,158,11,0.25)",
+                borderRadius: 8, padding: "10px 14px", fontSize: 12, color: t.warn,
                 marginBottom: 16, textAlign: "left",
               }}>
-                ⚠️ <strong>No meeting link</strong> — the host hasn't added a Google Meet link yet
+                <strong>No meeting link</strong> — the host hasn't added a Google Meet link yet
               </div>
             )}
 
             <div style={S.lobbyMeta}>
               <div style={S.lobbyMetaItem}>
-                <span style={{ color: "#5C6478" }}>Host</span>
+                <span style={{ color: t.txtDim }}>Host</span>
                 <span>{cls.host_name || cls.title}</span>
               </div>
               <div style={S.lobbyMetaItem}>
-                <span style={{ color: "#5C6478" }}>Scheduled</span>
+                <span style={{ color: t.txtDim }}>Scheduled</span>
                 <span>{formatDateTime(cls.scheduled_at)}</span>
               </div>
               <div style={S.lobbyMetaItem}>
-                <span style={{ color: "#5C6478" }}>Duration</span>
+                <span style={{ color: t.txtDim }}>Duration</span>
                 <span>{cls.duration_min} minutes</span>
               </div>
               <div style={S.lobbyMetaItem}>
-                <span style={{ color: "#5C6478" }}>Participants</span>
+                <span style={{ color: t.txtDim }}>Participants</span>
                 <span>{attendees.length} joined</span>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
               <button onClick={joinClass} style={S.joinBtn}>
-                {isHost ? "▶ Start Class" : "🔴 Join Class"}
+                {isHost ? <><Icon name="play" size={14} /> Start Class</> : <><Icon name="play" size={14} /> Join Class</>}
               </button>
               <button onClick={() => navigate("/classes")} style={S.backBtn}>
                 ← Back
@@ -219,15 +223,15 @@ export default function LiveClassRoom() {
       {/* Top bar */}
       <div style={S.topBar}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>📡 {cls.title}</span>
-          <span style={S.liveBadge}>🔴 LIVE</span>
-          <span style={{ fontSize: 12, color: "#5C6478" }}>
+          <span style={{ fontSize: 13, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="video" size={14} /> {cls.title}</span>
+          <span style={S.liveBadge}>LIVE</span>
+          <span style={{ fontSize: 12, color: t.txtDim }}>
             {attendees.length} participant{attendees.length !== 1 ? "s" : ""}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {isHost && (
-            <button onClick={endClass} style={S.endBtn}>⏹ End Class</button>
+            <button onClick={endClass} style={S.endBtn}>End Class</button>
           )}
           <button onClick={leaveClass} style={S.leaveBtn}>Leave</button>
         </div>
@@ -238,9 +242,9 @@ export default function LiveClassRoom() {
         <div style={S.mainContent}>
           {hasLink ? (
             <div style={S.linkCard}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🎥</div>
+              <div style={{ fontSize: 48, marginBottom: 16, display: "flex", justifyContent: "center", color: t.accent }}><Icon name="video" size={44} /></div>
               <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Video Call is Live!</h2>
-              <p style={{ color: DIM, fontSize: 14, marginBottom: 20, maxWidth: 400 }}>
+              <p style={{ color: t.txtDim, fontSize: 14, marginBottom: 20, maxWidth: 400 }}>
                 Click below to open the Google Meet call in a new tab.
               </p>
               <a
@@ -249,17 +253,17 @@ export default function LiveClassRoom() {
                 rel="noopener noreferrer"
                 style={S.meetLinkBtn}
               >
-                🔗 Open Google Meet
+                Open Google Meet
               </a>
-              <p style={{ color: "#5C6478", fontSize: 11, marginTop: 12, wordBreak: "break-all", maxWidth: 400 }}>
+              <p style={{ color: t.txtDim, fontSize: 11, marginTop: 12, wordBreak: "break-all", maxWidth: 400 }}>
                 {cls.meet_link}
               </p>
             </div>
           ) : (
             <div style={S.linkCard}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
+              <div style={{ fontSize: 48, marginBottom: 16, display: "flex", justifyContent: "center", color: t.txtDim }}><Icon name="clock" size={44} /></div>
               <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Waiting for meeting link...</h2>
-              <p style={{ color: DIM, fontSize: 14, maxWidth: 400 }}>
+              <p style={{ color: t.txtDim, fontSize: 14, maxWidth: 400 }}>
                 The host will share a Google Meet link soon. Stay on this page.
               </p>
             </div>
@@ -280,7 +284,7 @@ export default function LiveClassRoom() {
                       <span style={S.hostTag}>HOST</span>
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: "#5C6478" }}>
+                  <div style={{ fontSize: 11, color: t.txtDim }}>
                     Joined {new Date(att.joined_at).toLocaleTimeString()}
                   </div>
                 </div>
@@ -293,26 +297,20 @@ export default function LiveClassRoom() {
   );
 }
 
-const BG = "#0A0E16";
-const BG2 = "#0F1420";
-const PANEL = "#131926";
-const LINE = "rgba(237,239,243,0.09)";
-const TXT = "#EDEFF3";
-const DIM = "#8A93A6";
-const ORG = "#FF5A1F";
-
-const S = {
-  page: { minHeight: "100vh", background: BG, color: TXT, fontFamily: "Inter,sans-serif" },
+const makeStyles = (t) => {
+  const ORG = t.accent;
+  return {
+  page: { minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "Inter,sans-serif" },
   center: {
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-    height: "100vh", color: TXT, textAlign: "center",
+    height: "100vh", color: t.txt, textAlign: "center",
   },
   lobby: {
     display: "flex", alignItems: "center", justifyContent: "center",
     minHeight: "100vh", padding: 32,
   },
   lobbyCard: {
-    background: PANEL, border: "1px solid " + LINE, borderRadius: 16,
+    background: t.card, border: "1px solid " + t.border, borderRadius: 16,
     padding: "40px 48px", textAlign: "center", maxWidth: 500, width: "100%",
   },
   lobbyMeta: {
@@ -321,56 +319,57 @@ const S = {
   },
   lobbyMetaItem: {
     display: "flex", flexDirection: "column", gap: 2,
-    padding: "10px 14px", background: BG, borderRadius: 8, fontSize: 13,
+    padding: "10px 14px", background: t.bg, borderRadius: 8, fontSize: 13,
   },
   joinBtn: {
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff", border: "none",
+    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk, border: "none",
     padding: "12px 28px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer",
     flex: 1,
   },
   backBtn: {
-    background: "transparent", border: "1px solid " + LINE, color: TXT,
+    background: "transparent", border: "1px solid " + t.border, color: t.txt,
     padding: "12px 20px", borderRadius: 10, fontSize: 13, cursor: "pointer",
   },
-  roomPage: { height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" },
+  roomPage: { height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", background: t.bg },
   topBar: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "8px 20px", background: PANEL, borderBottom: "1px solid " + LINE, flexShrink: 0,
+    padding: "8px 20px", background: t.surface, borderBottom: "1px solid " + t.border, flexShrink: 0,
   },
   liveBadge: {
-    fontSize: 11, fontWeight: 700, color: "#F87171", background: "#F8717118",
+    fontSize: 11, fontWeight: 700, color: t.danger, background: "rgba(248,113,113,0.12)",
     padding: "3px 10px", borderRadius: 100,
   },
   endBtn: {
-    background: "#F87171", color: "#fff", border: "none",
+    background: t.danger, color: t.accentInk, border: "none",
     padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
   },
   leaveBtn: {
-    background: "transparent", border: "1px solid " + LINE, color: TXT,
+    background: "transparent", border: "1px solid " + t.border, color: t.txt,
     padding: "6px 14px", borderRadius: 6, fontSize: 12, cursor: "pointer",
   },
   roomBody: { flex: 1, display: "flex", overflow: "hidden" },
   mainContent: {
     flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-    background: BG, padding: 32,
+    background: t.bg, padding: 32,
   },
   linkCard: {
-    background: PANEL, border: "1px solid " + LINE, borderRadius: 16,
+    background: t.card, border: "1px solid " + t.border, borderRadius: 16,
     padding: "40px 48px", textAlign: "center", maxWidth: 500,
   },
   meetLinkBtn: {
     display: "inline-block",
-    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: "#fff",
+    background: "linear-gradient(135deg,#FF5A1F,#ef4444)", color: t.accentInk,
     padding: "14px 32px", borderRadius: 10, fontSize: 16, fontWeight: 700,
     textDecoration: "none", cursor: "pointer",
   },
   sidebar: {
-    width: 280, background: BG2, borderLeft: "1px solid " + LINE,
+    width: 280, background: t.card, borderLeft: "1px solid " + t.border,
     display: "flex", flexDirection: "column", flexShrink: 0,
   },
   sidebarHeader: {
-    padding: "12px 16px", fontSize: 12, fontWeight: 600, color: "#5C6478",
-    borderBottom: "1px solid " + LINE, letterSpacing: 1,
+    padding: "12px 16px", fontSize: 12, fontWeight: 600, color: t.txtDim,
+    borderBottom: "1px solid " + t.border, letterSpacing: 1,
   },
   participantList: { flex: 1, overflow: "auto", padding: "8px 0" },
   participant: {
@@ -378,12 +377,13 @@ const S = {
     fontSize: 13,
   },
   avatar: {
-    width: 32, height: 32, borderRadius: "50%", background: ORG + "30", color: ORG,
+    width: 32, height: 32, borderRadius: "50%", background: ORG + "30", color: t.accentLink,
     display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: 13, fontWeight: 700, flexShrink: 0,
   },
   hostTag: {
-    fontSize: 9, fontWeight: 700, color: ORG, background: ORG + "18",
+    fontSize: 9, fontWeight: 700, color: t.accentLink, background: ORG + "18",
     padding: "1px 6px", borderRadius: 100, marginLeft: 6, letterSpacing: 0.5,
   },
+  };
 };
