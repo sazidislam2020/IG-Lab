@@ -22,6 +22,7 @@ export default function BottomNav() {
   const studentItems = [
     { icon: "home", label: "Home", path: "/dashboard" },
     { icon: "book", label: "Courses", path: "/courses" },
+    { icon: "bolt", label: "Learn", path: "/learn" },
     { icon: "code", label: "Code", path: "/sandbox" },
     { icon: "video", label: "Live", path: "/classes" },
     { icon: "user", label: "Profile", path: "/profile" },
@@ -30,6 +31,7 @@ export default function BottomNav() {
   const teacherItems = [
     { icon: "home", label: "Home", path: "/dashboard" },
     { icon: "users", label: "Students", path: "/teacher" },
+    { icon: "bolt", label: "Learn", path: "/learn" },
     { icon: "video", label: "Live", path: "/classes" },
     { icon: "check", label: "Review", path: "/teacher/review" },
     { icon: "user", label: "Profile", path: "/profile" },
@@ -38,7 +40,7 @@ export default function BottomNav() {
   const adminItems = [
     { icon: "home", label: "Home", path: "/dashboard" },
     { icon: "shield", label: "Approve", path: "/admin/approvals" },
-    { icon: "video", label: "Live", path: "/classes" },
+    { icon: "bolt", label: "Learn", path: "/learn" },
     { icon: "settings", label: "Settings", path: "/admin/site-settings" },
     { icon: "user", label: "Profile", path: "/profile" },
   ];

@@ -303,6 +303,10 @@ export default function Dashboard() {
             <section style={{ marginBottom: 32 }}>
               <SectionHeader title="⚡ Quick Actions" t={t} />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+                {/* Learning Engine — available to every role (the bottom nav
+                    version of this entry is mobile-only; this card is the
+                    desktop/PC entry point). */}
+                <ActionCard icon="🧠" title="Learning Engine" desc="Read · SQL · Python labs" color="#38BDF8" t={t} onClick={() => navigate("/learn")} />
                 {isStudent && (
                   <>
                     <ActionCard icon="💻" title="Code Sandbox" desc="Write & run code" color="#FF6B2B" t={t} onClick={() => navigate("/sandbox")} />

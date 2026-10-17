@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Learning Engine">
+  <defs>
+    <linearGradient id="le-tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#243354"/>
+      <stop offset="1" stop-color="#0d1322"/>
+    </linearGradient>
+    <linearGradient id="le-bar" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff9d00"/>
+      <stop offset="1" stop-color="#ffc84d"/>
+    </linearGradient>
+    <linearGradient id="le-page" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef2fb"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#le-tile)"/>
+  <g>
+    <path d="M8 25.2c6.3-3.7 14.6-3.6 20.8 0.7v21.6c-6.2-4.3-14.5-4.4-20.8-0.7z" fill="url(#le-page)"/>
+    <path d="M56 25.2c-6.3-3.7-14.6-3.6-20.8 0.7v21.6c6.2-4.3 14.5-4.4 20.8-0.7z" fill="#d3ddf2"/>
+    <rect x="31.1" y="25" width="1.8" height="22.5" rx="0.9" fill="#93a5cc"/>
+  </g>
+  <g fill="url(#le-bar)">
+    <rect x="37.4" y="34.8" width="4.2" height="8.2" rx="1.5"/>
+    <rect x="43.4" y="30.6" width="4.2" height="12.4" rx="1.5"/>
+    <rect x="49.4" y="26.4" width="4.2" height="16.6" rx="1.5"/>
+  </g>
+</svg>

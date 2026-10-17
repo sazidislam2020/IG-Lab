@@ -28,6 +28,7 @@ import LiveClassRoom from "./pages/LiveClassRoom";
 import CreateClass from "./pages/CreateClass";
 import SiteSettings from "./pages/SiteSettings";
 import PaymentPage from "./pages/PaymentPage";
+import Learn from "./pages/Learn";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -276,6 +277,16 @@ export default function App() {
                 <LabGate>
                   <Simulation />
                 </LabGate>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Learning Engine (bundled static sub-app) */}
+          <Route
+            path="/learn"
+            element={
+              <ProtectedRoute>
+                <Learn />
               </ProtectedRoute>
             }
           />

@@ -31,14 +31,25 @@ npm install
    - Replace `YOUR_EMAIL_HERE` with your actual email
    - This makes you the super admin
 
-### 3. Run the app
+### 3. Embed the Learning Engine (first run)
+```bash
+npm run build:engine
+```
+Builds `../learning-engine` with a relative asset base and copies it into
+`public/learning-engine/`. Re-run it whenever the learning-engine source
+changes — the resulting bundle IS committed (18 MB, incl. the pyodide
+runtime) so a fresh clone already has everything. The `/learn` page renders
+it in a same-origin iframe with hash routing, so everything (books, labs,
+storage, offline PDF viewer) stays inside the frame.
+
+### 4. Run the app
 ```bash
 npm run dev
 ```
 
 Open http://localhost:5173 — you should see the landing page.
 
-### 4. Test the flow
+### 5. Test the flow
 1. Click "Start free" → sign up with your email
 2. Go to Supabase SQL Editor → run the bootstrap query with your email
 3. Come back → log in → you should see the super admin dashboard
