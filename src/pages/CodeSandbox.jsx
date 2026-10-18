@@ -27,6 +27,15 @@ const STARTER_CODE = {
 
 const CLIENT_LANGS = ["javascript", "html", "css"];
 
+/** HTML/CSS render live in the PREVIEW panel — no server round-trip.
+ *  CSS is a stylesheet, not a document, so wrap it in a sample page. */
+function buildPreviewDoc(language, code) {
+  if (language === "css") {
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${code}</style></head><body><div class="card"><h1>CSS Preview</h1><p>Sample content — your stylesheet is applied to this page.</p></div></body></html>`;
+  }
+  return code;
+}
+
 export default function CodeSandbox() {
   const { colors: t } = useTheme();
   const S = makeStyles(t);
@@ -35,6 +44,8 @@ export default function CodeSandbox() {
   const [output, setOutput] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [runs, setRuns] = useState(null); // server-side run allowance
+  const [previewKey, setPreviewKey] = useState(0); // bump to remount the preview iframe
+  const isPreviewLang = language === "html" || language === "css";
 
   function handleLanguageChange(langId) {
     // Never silently discard the student's edits — switching language
@@ -97,14 +108,12 @@ export default function CodeSandbox() {
       return;
     }
 
-    if (language === "html") {
-      setOutput(["HTML preview is available in the Preview panel."]);
-      setIsRunning(false);
-      return;
-    }
-
-    if (language === "css") {
-      setOutput(["CSS preview is available in the Preview panel."]);
+    // HTML/CSS render live in the PREVIEW panel (no server run, no run
+    // allowance used). Clicking Run again remounts the iframe, restarting
+    // any scripts in the page.
+    if (isPreviewLang) {
+      setPreviewKey((k) => k + 1);
+      setOutput([]);
       setIsRunning(false);
       return;
     }
@@ -237,10 +246,18 @@ export default function CodeSandbox() {
         {/* Output */}
         <div style={S.outputWrap}>
           <div style={S.panelLabel}>
-            <span style={{...S.panelDot, background: output.length > 0 ? t.success : t.txtDim}} /> OUTPUT
+            <span style={{...S.panelDot, background: isPreviewLang || output.length > 0 ? t.success : t.txtDim}} /> {isPreviewLang ? "PREVIEW — LIVE" : "OUTPUT"}
           </div>
           <div style={S.output}>
-            {output.length === 0 ? (
+            {isPreviewLang ? (
+              <iframe
+                key={previewKey}
+                title="Live preview"
+                sandbox="allow-scripts"
+                srcDoc={buildPreviewDoc(language, code)}
+                style={{ width: "100%", height: "100%", border: "none", borderRadius: 6, background: "#fff" }}
+              />
+            ) : output.length === 0 ? (
               <div style={S.outputPlaceholder}>
                 Click <strong>Run</strong> to execute your code
               </div>
