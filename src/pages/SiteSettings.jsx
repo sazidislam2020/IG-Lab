@@ -36,6 +36,7 @@ const categories = [
   { key: "theme", label: "Theme / Colors", icon: "\uD83C\uDFA8" },
   { key: "partners", label: "Partners Logos", icon: "\uD83D\uDC65" },
   { key: "lab", label: "Robot Lab", icon: "\uD83E\uDD16" },
+  { key: "learn", label: "Learn Engine", icon: "\uD83E\uDDE0" },
 ];
 
 // ─── Input Components ───────────────────────────────────────────

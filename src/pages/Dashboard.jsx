@@ -20,18 +20,21 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const [labMode, setLabMode] = useState("free");
+  const [learnMode, setLearnMode] = useState("free");
 
   const { subscription, isFree, isPaid, loading: subLoading } = useSubscription(user?.id);
 
-  // Robot Lab access mode (set by admin in Site Settings)
+  // Admin-controlled access modes (Site Settings → Robot Lab / Learn Engine)
   useEffect(() => {
     supabase
       .from("site_settings")
-      .select("setting_value")
-      .eq("setting_key", "lab_access_mode")
-      .maybeSingle()
+      .select("setting_key, setting_value")
+      .in("setting_key", ["lab_access_mode", "learn_access_mode"])
       .then(({ data }) => {
-        if (data?.setting_value) setLabMode(data.setting_value);
+        for (const row of data || []) {
+          if (row.setting_key === "lab_access_mode") setLabMode(row.setting_value);
+          if (row.setting_key === "learn_access_mode") setLearnMode(row.setting_value);
+        }
       })
       .catch(() => {});
   }, []);
@@ -306,7 +309,7 @@ export default function Dashboard() {
                 {/* Learning Engine — available to every role (the bottom nav
                     version of this entry is mobile-only; this card is the
                     desktop/PC entry point). */}
-                <ActionCard icon="🧠" title="Learning Engine" desc="Read · SQL · Python labs" color="#38BDF8" t={t} onClick={() => navigate("/learn")} />
+                <ActionCard icon="🧠" title="Learning Engine" desc="Read · SQL · Python labs" color="#38BDF8" t={t} onClick={() => navigate("/learn")} badge={learnMode === "paid" && isFree && !isAdmin ? "🔒 Paid" : "✓ Free"} />
                 {isStudent && (
                   <>
                     <ActionCard icon="💻" title="Code Sandbox" desc="Write & run code" color="#FF6B2B" t={t} onClick={() => navigate("/sandbox")} />

@@ -21,6 +21,7 @@ import AdminCourses from "./pages/AdminCourses";
 import AuditLog from "./pages/AuditLog";
 import Simulation from "./pages/Simulation";
 import LabGate from "./components/LabGate";
+import LearnGate from "./components/LearnGate";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectEditor from "./pages/ProjectEditor";
 import LiveClassesPage from "./pages/LiveClassesPage";
@@ -281,12 +282,14 @@ export default function App() {
             }
           />
 
-          {/* Learning Engine (bundled static sub-app) */}
+          {/* Learning Engine (bundled static sub-app) — admin-set free/paid */}
           <Route
             path="/learn"
             element={
               <ProtectedRoute>
-                <Learn />
+                <LearnGate>
+                  <Learn />
+                </LearnGate>
               </ProtectedRoute>
             }
           />
