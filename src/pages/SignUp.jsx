@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import AdminContact from "../components/AdminContact";
 
 export default function SignUp() {
   const [fullName, setFullName] = useState("");
@@ -65,6 +66,8 @@ export default function SignUp() {
           <p style={{ ...styles.subtitle, marginTop: 20, fontSize: 13, color: "#5C6478" }}>
             You'll be able to sign in once an administrator approves your account.
           </p>
+
+          <AdminContact />
 
           <Link to="/login" style={styles.button}>
             Go to sign in

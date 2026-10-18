@@ -81,6 +81,11 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { full_name: fullName },
+        // Where Supabase sends the person after they click the confirmation
+        // link. Without this it falls back to the project Site URL, which is
+        // not this app — the link then lands on a dead page. Must also be
+        // listed under Authentication → URL Configuration → Redirect URLs.
+        emailRedirectTo: `${window.location.origin}/dashboard`,
       },
     });
 

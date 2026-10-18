@@ -121,6 +121,18 @@ export default function Login() {
             Sign up free
           </Link>
         </p>
+
+        <p style={styles.help}>
+          Trouble signing in? WhatsApp{" "}
+          <a
+            href="https://wa.me/8801722200248"
+            target="_blank"
+            rel="noreferrer"
+            style={{ ...styles.link, fontWeight: 600 }}
+          >
+            Md. Sazid Ul Islam (Admin) — 01722200248
+          </a>
+        </p>
       </div>
     </div>
   );
@@ -221,6 +233,13 @@ const makeStyles = (t) => ({
     cursor: "pointer",
     marginTop: 4,
     transition: "opacity 0.2s",
+  },
+  help: {
+    textAlign: "center",
+    color: t.txtDim,
+    fontSize: 12.5,
+    marginTop: 14,
+    lineHeight: 1.5,
   },
   footer: {
     textAlign: "center",

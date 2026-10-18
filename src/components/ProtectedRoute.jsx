@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import AdminContact from "./AdminContact";
 
 export default function ProtectedRoute({ children, requiredRole }) {
   const { user, profile, loading, signOut } = useAuth();
@@ -34,6 +35,9 @@ export default function ProtectedRoute({ children, requiredRole }) {
           <div style={styles.pendingStep}><span style={styles.stepActive}>●</span> Waiting for approval</div>
           <div style={styles.pendingStep}><span style={styles.stepPending}>3</span> Access the platform</div>
         </div>
+        <div style={{ width: "100%", maxWidth: 340 }}>
+          <AdminContact />
+        </div>
         <button
           onClick={async () => { await signOut(); window.location.href = '/login'; }}
           style={styles.signOutBtn}
@@ -53,6 +57,9 @@ export default function ProtectedRoute({ children, requiredRole }) {
           Your account was not approved. Please contact support for more
           information.
         </p>
+        <div style={{ width: "100%", maxWidth: 340, marginBottom: 24 }}>
+          <AdminContact title="Contact the Admin" />
+        </div>
         <button
           onClick={async () => { await signOut(); window.location.href = '/login'; }}
           style={styles.signOutBtn}
