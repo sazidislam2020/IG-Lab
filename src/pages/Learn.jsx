@@ -7,7 +7,20 @@ import Icon from "../components/Icon";
 // The bundled Learning Engine (scripts/build-learning-engine.mjs copies
 // ../learning-engine/dist here). Its assets use a relative base, so this URL
 // resolves everything from /learning-engine/ — library and all five labs
-// (SQL, Excel, Python, Power BI, reader) run same-origin inside the frame.
+// (SQL, Excel, Python, Power BI, reader) run inside the frame.
+//
+// SECURITY NOTE — do NOT add `sandbox="allow-scripts"` to the iframe below.
+// It was tested empirically and makes the engine unusable: an opaque origin
+// (no allow-same-origin) throws SecurityError for localStorage/IndexedDB,
+// blocks network module scripts, and forbids constructing Workers — pyodide,
+// the PDF viewer, book storage and every lab die. allow-scripts +
+// allow-same-origin together would be no protection at all (same-origin script
+// can reach parent.document regardless). The real mitigations are:
+//   1. DOMPurify sanitization of imported book HTML at the single marked.parse
+//      choke point (learning-engine/src/pages/Reader.jsx) — removes the script
+//      injection path into this frame;
+//   2. serving the engine from a separate origin (own domain) in the long run,
+//      which isolates it from the host session without any sandbox flags.
 const ENGINE_URL = "/learning-engine/index.html";
 
 export default function Learn() {

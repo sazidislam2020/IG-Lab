@@ -80,46 +80,51 @@ export default function BottomNav() {
   );
 }
 
-const makeStyles = (t) => ({
-  nav: {
-    position: "fixed",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 64,
-    background: t.bg,
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-    borderTop: `1px solid ${t.border}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-around",
-    padding: "0 8px",
-    zIndex: 1000,
-  },
-  item: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 4,
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    padding: "6px 12px",
-    transition: "color 0.2s",
-  },
-  icon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "background 0.2s",
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: 600,
-    letterSpacing: "0.02em",
-  },
-});
+const makeStyles = (t) => {
+  const isLight = t.bg === "#FAFAFA";
+  return {
+    nav: {
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 64,
+      // Ostad-style: solid white bar floating above content (light theme)
+      background: isLight ? "#FFFFFF" : t.bg,
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderTop: `1px solid ${t.border}`,
+      boxShadow: isLight ? "0 -4px 20px rgba(16,24,40,0.06)" : "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-around",
+      padding: "0 8px",
+      zIndex: 1000,
+    },
+    item: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 3,
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      padding: "4px 10px",
+      transition: "color 0.2s",
+    },
+    icon: {
+      width: 38,
+      height: 32,
+      borderRadius: 10,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "background 0.2s",
+    },
+    label: {
+      fontSize: 10,
+      fontWeight: 600,
+      letterSpacing: "0.02em",
+    },
+  };
+};

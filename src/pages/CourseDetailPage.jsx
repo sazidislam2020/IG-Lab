@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useSubscription, isModuleGated } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
-import CertificateView, { CertificateBlockedView } from "../components/CertificateView";
+import CertificateSection from "../components/design/CertificateSection";
 
 const MODULE_ICONS = {
   live: "📡",
@@ -258,7 +258,9 @@ export default function CourseDetailPage() {
                 )}
               </h1>
               <p style={{ fontSize: 15, color: t.txtSec, lineHeight: 1.6 }}>{course.description}</p>
-              {enrollCount > 0 && <p style={{ fontSize: 12, color: t.txtDim, marginTop: 6 }}>👥 {enrollCount} student{enrollCount !== 1 ? "s" : ""} enrolled</p>}
+              {/* Same RLS caveat as the courses list: students only see their
+                  own enrollment row, so the number would be wrong for them. */}
+              {!isStudent && enrollCount > 0 && <p style={{ fontSize: 12, color: t.txtDim, marginTop: 6 }}>👥 {enrollCount} student{enrollCount !== 1 ? "s" : ""} enrolled</p>}
             </div>
             {user?.id && (
               <button
@@ -319,7 +321,7 @@ export default function CourseDetailPage() {
           </div>
         )}
 
-        {/* Certificate section — always visible, visual only, no download */}
+        {/* Certificate + congratulation poster (admin-designed) */}
         {isStudent && modules.length > 0 && (() => {
           const totalTasks = modules.reduce((s, m) => s + m.totalTasks, 0);
           const doneTasks = modules.reduce((s, m) => s + m.completedCount, 0);
@@ -328,103 +330,15 @@ export default function CourseDetailPage() {
           const certDisabled = course?.certificate_enabled === false;
 
           return (
-            <div style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 14, padding: 24, marginBottom: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 20 }}>🏆</span>
-                <h2 style={{ fontSize: 17, fontWeight: 700, color: t.txt, margin: 0 }}>Course Certificate</h2>
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 100,
-                    background: certificate
-                      ? "rgba(74,222,128,0.12)"
-                      : certBlock
-                      ? "rgba(239,68,68,0.12)"
-                      : "rgba(255,255,255,0.06)",
-                    color: certificate ? "#4ADE80" : certBlock ? "#F87171" : t.txtDim,
-                  }}
-                >
-                  {certificate
-                    ? "✓ Earned"
-                    : certBlock
-                    ? "🚫 Not available"
-                    : certDisabled
-                    ? "Disabled"
-                    : `🎓 ${pct}% complete`}
-                </span>
-              </div>
-
-              {certificate ? (
-                <>
-                  <CertificateView
-                    studentName={certificate.student_name}
-                    courseName={certificate.course_name}
-                    completionDate={certificate.earned_at}
-                    totalPoints={certificate.total_points}
-                    certificateId={certificate.certificate_id}
-                    compact
-                  />
-                  <p style={{ fontSize: 12, color: t.txtDim, textAlign: "center", marginTop: 12 }}>
-                    🎓 Congratulations! This certificate is displayed for viewing. Ask your administrator for the official copy.
-                  </p>
-                </>
-              ) : certBlock ? (
-                <CertificateBlockedView reason={certBlock.reason} courseName={course?.title} />
-              ) : certDisabled ? (
-                <div style={{ textAlign: "center", padding: "24px 16px", color: t.txtDim, fontSize: 14 }}>
-                  🔒 Certificates are currently not offered for this course.
-                </div>
-              ) : (
-                /* Locked preview — student sees the certificate they're working toward */
-                <div style={{ position: "relative" }}>
-                  <div style={{ filter: "blur(2px) brightness(0.55)", pointerEvents: "none", userSelect: "none" }}>
-                    <CertificateView
-                      studentName={profile?.full_name || profile?.email || "Your Name"}
-                      courseName={course?.title || "Course"}
-                      completionDate={new Date().toISOString()}
-                      totalPoints={0}
-                      certificateId="IL-••••-••••-••••••"
-                      compact
-                    />
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <div style={{ fontSize: 34 }}>🔒</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", textAlign: "center" }}>
-                      Complete all tasks to earn this certificate
-                    </div>
-                    <div style={{ width: "60%", maxWidth: 320 }}>
-                      <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, overflow: "hidden" }}>
-                        <div
-                          style={{
-                            height: "100%",
-                            width: `${pct}%`,
-                            background: isComplete ? "#4ADE80" : "linear-gradient(90deg,#FF6B2B,#F59E0B)",
-                            borderRadius: 4,
-                            transition: "width 0.4s",
-                          }}
-                        />
-                      </div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", textAlign: "center", marginTop: 6, fontWeight: 600 }}>
-                        {doneTasks}/{totalTasks} tasks — {pct}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <CertificateSection
+              course={course}
+              profile={profile}
+              certificate={certificate}
+              certBlock={certBlock}
+              certDisabled={certDisabled}
+              progress={{ pct, doneTasks, totalTasks, isComplete }}
+              onUnlocked={setCertificate}
+            />
           );
         })()}
 

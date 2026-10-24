@@ -1,12 +1,19 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext(null);
+
+// Extra attempts for transient profile-fetch failures (network errors,
+// Supabase clock-skew "JWT issued at future" 401s, rate limits, 5xx).
+const PROFILE_RETRY_ATTEMPTS = 3;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Monotonic id so a slow fetch for a *previous* user can never overwrite
+  // the profile of the user who signed in most recently.
+  const fetchSeqRef = useRef(0);
 
   useEffect(() => {
     // Get initial session
@@ -28,6 +35,9 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Drop any profile left over from a different user before loading the
+        // new one, so a failed fetch can't expose the previous account's data.
+        setProfile((prev) => (prev && prev.id === session.user.id ? prev : null));
         fetchProfile(session.user.id, session.user.email);
       } else {
         setProfile(null);
@@ -38,19 +48,24 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchProfile(userId, email) {
-    console.log("Fetching profile for user:", userId);
+  async function fetchProfile(userId, email, attempt = 0) {
+    const fetchId = ++fetchSeqRef.current;
+    console.log(`Fetching profile for user: ${userId} (attempt ${attempt + 1})`);
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
 
+    // A newer fetch (a different user, or a retry) has started — abandon this
+    // result so stale data never lands on the wrong account.
+    if (fetchId !== fetchSeqRef.current) return;
+
     if (error) {
       console.error("Error fetching profile:", error.message, error);
-      // If profile doesn't exist, try to create it (fallback only — the
-      // handle_new_user trigger normally creates the row). RLS only allows
-      // inserting yourself as an unapproved student.
+
+      // Missing row (trigger race or RLS): create ourselves as an unapproved
+      // student, then re-read. RLS only allows inserting yourself.
       if (error.code === "PGRST116" || error.message?.includes("0 rows")) {
         console.log("Profile not found, attempting to create...");
         const { error: insertError } = await supabase
@@ -65,13 +80,33 @@ export function AuthProvider({ children }) {
             .select("*")
             .eq("id", userId)
             .single();
-          setProfile(newData);
+          if (fetchId === fetchSeqRef.current && newData) setProfile(newData);
         }
+        setLoading(false);
+        return;
       }
-    } else {
-      console.log("Profile loaded:", data);
-      setProfile(data);
+
+      // Transient failure (network error, 401 JWT clock-skew, 429, 5xx):
+      // back off and retry instead of leaving the app stuck with no profile.
+      const transient =
+        !error.code ||
+        error.status === 401 ||
+        error.status === 429 ||
+        (error.status >= 500 && error.status <= 599) ||
+        /JWT|fetch|network|timeout|Failed to fetch/i.test(error.message || "");
+      if (transient && attempt < PROFILE_RETRY_ATTEMPTS) {
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+        return fetchProfile(userId, email, attempt + 1);
+      }
+
+      // Give up: stop the spinner. `profile` stays null (never the previous
+      // user's), so role gates fall back safely instead of leaking access.
+      setLoading(false);
+      return;
     }
+
+    console.log("Profile loaded:", data);
+    if (fetchId === fetchSeqRef.current) setProfile(data);
     setLoading(false);
   }
 

@@ -29,20 +29,14 @@ export function useSubscription(userId) {
       .limit(1)
       .maybeSingle();
 
-    // Check if expired
-    if (data && data.expires_at) {
-      const now = new Date();
-      const expires = new Date(data.expires_at);
-      if (expires < now) {
-        // Mark as expired
-        await supabase
-          .from("user_subscriptions")
-          .update({ status: "expired" })
-          .eq("id", data.id);
-        setSubscription(null);
-      } else {
-        setSubscription(data);
-      }
+    // Expiry is handled at read time only. The old code also wrote
+    // `update({ status: "expired" })` back to the row — that made every page
+    // mount a database write (write amplification) and required a client-writable
+    // RLS path on user_subscriptions (0019's "Users can update own subscription
+    // status" policy + guard trigger). Row status is now informational; the
+    // access decision below never trusts an expired row either way.
+    if (data && data.expires_at && new Date(data.expires_at) < new Date()) {
+      setSubscription(null); // expired: treated as no active plan (no write)
     } else {
       setSubscription(data);
     }

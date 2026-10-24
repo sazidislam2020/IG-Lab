@@ -108,7 +108,7 @@ export default function Leaderboard() {
                 <div key={s.id} style={isMe ? { ...S.row, ...S.rowMe } : S.row}>
                   <span style={{ ...S.rankNum, color: isMe ? t.accentLink : t.txtDim }}>{i + 4}</span>
                   <div>
-                    <div style={S.studentName}>{s.full_name || 'No name'}{isMe ? ' (you)' : ''}</div>
+                    <div style={S.studentName}>{s.full_name || s.email?.split('@')[0] || 'Student'}{isMe ? ' (you)' : ''}</div>
                   </div>
                   <span style={S.pointsVal}>{s.totalPoints}</span>
                   <span style={S.tasksVal}>{s.passedCount}</span>

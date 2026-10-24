@@ -105,6 +105,15 @@ export default function AdminCourses() {
     setCourses(prev => prev.map(c => c.id === course.id ? { ...c, certificate_enabled: next } : c));
   }
 
+  async function saveCertPrice() {
+    if (!certCourse) return;
+    const price = Math.max(0, Number(certCourse.certificate_price) || 0);
+    const { error } = await supabase.from('courses').update({ certificate_price: price }).eq('id', certCourse.id);
+    if (error) { alert('Failed to save price (is migration 0023 applied?): ' + error.message); return; }
+    setCertCourse(c => ({ ...c, certificate_price: price }));
+    setCourses(prev => prev.map(c => c.id === certCourse.id ? { ...c, certificate_price: price } : c));
+  }
+
   async function openCertManager(course) {
     setTeachCourse(null);
     setCertCourse(course);
@@ -426,6 +435,21 @@ export default function AdminCourses() {
             <div style={{ fontSize: 13, color: t.txtDim, marginBottom: 16 }}>
               When certificates are ON, every student who completes all tasks automatically earns the certificate.
               Blocking a student prevents their certificate and shows them your message instead.
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18, flexWrap: 'wrap', padding: '12px 14px', background: t.card, border: `1px solid ${t.border}`, borderRadius: 10 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: t.txt }}>Certificate price (৳):</span>
+              <input
+                type="number" min="0" step="1"
+                value={certCourse.certificate_price ?? 0}
+                onChange={(e) => setCertCourse(c => ({ ...c, certificate_price: e.target.value }))}
+                style={{ width: 110, padding: '7px 10px', borderRadius: 8, border: `1px solid ${t.border}`, background: t.bg, color: t.txt, fontSize: 13 }}
+              />
+              <button onClick={saveCertPrice} style={{ ...S.btnSmall, background: 'rgba(74,222,128,0.12)', color: t.success }}>Save price</button>
+              <span style={{ fontSize: 12, color: t.txtDim }}>
+                {Number(certCourse.certificate_price || 0) > 0
+                  ? 'Paid — students complete the course free, then pay once to unlock the certificate.'
+                  : 'Free — certificate is awarded automatically on completion.'}
+              </span>
             </div>
             {certLoading ? (
               <div style={S.loading}>Loading students...</div>

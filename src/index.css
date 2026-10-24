@@ -17,8 +17,8 @@ html, body, #root {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--bg, #09090B);
-  color: var(--txt, #FAFAFA);
+  background: var(--bg, #FAFAFA);
+  color: var(--txt, #18181B);
   font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
   transition: background 0.3s, color 0.3s;
@@ -123,4 +123,22 @@ a {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Skip link: off-screen until keyboard-focused (CSS :focus — no JS timing) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 10px 16px;
+  background: #ff6b2b;
+  color: #18181B; /* ink on orange = 6.1:1 (white was 2.84:1) */
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
 }

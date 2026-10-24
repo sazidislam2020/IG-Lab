@@ -189,7 +189,7 @@ export default function TeacherDashboard() {
                   {recentStudents.map(s => (
                     <tr key={s.id}>
                       <td style={S.td}>
-                        <div style={{ fontWeight: 600, color: t.txt }}>{s.full_name || 'No name'}</div>
+                        <div style={{ fontWeight: 600, color: t.txt }}>{s.full_name || s.email?.split('@')[0] || 'Student'}</div>
                         <div style={{ fontSize: 12, color: t.txtDim }}>{s.email}</div>
                       </td>
                       <td style={S.td}><span style={{ color: t.accentLink, fontWeight: 700 }}>{s.totalPoints}</span></td>

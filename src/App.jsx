@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Landing from "./pages/Landing";
@@ -32,8 +32,17 @@ import PaymentPage from "./pages/PaymentPage";
 import Learn from "./pages/Learn";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import DesignTemplates from "./pages/admin/DesignTemplates";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "./components/BottomNav";
+
+// Unknown URL: signed-in users go to the dashboard instead of the public
+// landing page; signed-out visitors see the landing page.
+function FallbackRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? <Navigate to="/dashboard" replace /> : <Landing />;
+}
 
 export default function App() {
   return (
@@ -41,6 +50,13 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ThemeProvider>
+        {/* Keyboard/screen-reader skip link; main wraps the routes with
+            display:contents so page layouts are completely unaffected.
+            The reveal on focus is pure CSS (.skip-link:focus in index.css). */}
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
+        <main id="main-content" tabIndex={-1} style={{ display: "contents" }}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
@@ -190,6 +206,16 @@ export default function App() {
             }
           />
 
+          {/* Certificate & poster designer — admin */}
+          <Route
+            path="/admin/designs"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <DesignTemplates />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Super Admin routes */}
           <Route
             path="/super-admin"
@@ -295,8 +321,9 @@ export default function App() {
           />
 
           {/* Catch all */}
-          <Route path="*" element={<Landing />} />
+          <Route path="*" element={<FallbackRoute />} />
         </Routes>
+        </main>
         <BottomNav />
         </ThemeProvider>
       </AuthProvider>

@@ -3,9 +3,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext(null);
 
 // Theme color tokens
+// Ostad-style light theme: soft gray page background, pure-white cards,
+// hairline borders. NOTE: light bg MUST stay "#FAFAFA" — ~14 components
+// detect light mode via `t.bg === "#FAFAFA"`.
 // Contrast (WCAG AA 4.5:1) verified 2026-10-04 — see docs/UI_UX_AUDIT.md §1.1:
 //   dark  txtDim #8B8B93 on #09090B / #1C1C21 → 5.9 / 5.1
-//   light txtDim #6B7280 on #FAFAFA / #F4F4F5 → 4.8 / 4.6
+//   light txtDim #6B7280 on #FAFAFA / #FFFFFF → 4.8 / 4.6
 //   accent label #18181B on #FF6B2B → 6.1 (use instead of white)
 export const themes = {
   dark: {
@@ -26,13 +29,14 @@ export const themes = {
     info: "#38BDF8",
     warn: "#FFB238",
     violet: "#A78BFA",
+    shadow: "0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35)", // card shadow
   },
   light: {
-    bg: "#FAFAFA",
+    bg: "#FAFAFA", // Ostad-like soft gray page (also the light-mode sentinel)
     surface: "#FFFFFF",
-    card: "#F4F4F5",
-    border: "#E4E4E7",
-    borderLight: "#D4D4D8",
+    card: "#FFFFFF", // white cards on gray page = Ostad look
+    border: "#E7E8EC",
+    borderLight: "#D8DAE0",
     txt: "#18181B",
     txtSec: "#52525B",
     txtDim: "#6B7280",
@@ -45,15 +49,16 @@ export const themes = {
     info: "#0369A1",
     warn: "#B45309",
     violet: "#6D28D9",
+    shadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.06)", // soft Ostad-like card shadow
   },
 };
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem("ignite-theme") || "dark";
+      return localStorage.getItem("ignite-theme") || "light";
     } catch {
-      return "dark";
+      return "light";
     }
   });
 

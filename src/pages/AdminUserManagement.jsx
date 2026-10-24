@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function AdminUserManagement() {
   const { colors: t } = useTheme();
+  const { profile } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -26,27 +28,60 @@ export default function AdminUserManagement() {
     setLoading(false);
   }
 
+  // Best-effort audit entry — never blocks or fails the action itself.
+  async function logAction(action, userId, details) {
+    try {
+      await supabase.from("audit_log").insert({
+        actor_id: profile?.id || null,
+        action,
+        target_user_id: userId,
+        details,
+      });
+    } catch (_) {
+      /* audit write is non-critical */
+    }
+  }
+
   async function updateRole(userId, newRole) {
     setActionLoading(userId);
-    await supabase.from("profiles").update({ role: newRole }).eq("id", userId);
-    await fetchUsers();
+    const { error } = await supabase.from("profiles").update({ role: newRole }).eq("id", userId);
+    if (error) {
+      alert("Failed to update role: " + error.message);
+    } else {
+      await logAction("assign_role", userId, { new_role: newRole });
+      await fetchUsers();
+    }
     setActionLoading(null);
     setShowModal(null);
   }
 
   async function updateStatus(userId, newStatus) {
     setActionLoading(userId);
-    await supabase.from("profiles").update({ status: newStatus }).eq("id", userId);
-    await fetchUsers();
+    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", userId);
+    if (error) {
+      alert("Failed to update status: " + error.message);
+    } else {
+      const action =
+        newStatus === "approved" ? "approve_user" : newStatus === "rejected" ? "reject_user" : "revoke_user";
+      await logAction(action, userId, { status: newStatus });
+      await fetchUsers();
+    }
     setActionLoading(null);
   }
 
   async function deleteUser(userId) {
-    if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
+    // The browser can't delete auth users (needs the service role key), so
+    // this revokes access instead — say exactly that, and it's reversible
+    // from Approvals → Re-approve.
+    if (!confirm("Revoke this user's access? They will no longer be able to sign in (marked as rejected). Their account and data are kept, and you can re-approve them later.")) return;
     setActionLoading(userId);
-    // Delete from auth (requires service role - we'll just mark as rejected)
-    await supabase.from("profiles").update({ status: "rejected" }).eq("id", userId);
-    await fetchUsers();
+    const { error } = await supabase.from("profiles").update({ status: "rejected" }).eq("id", userId);
+    if (error) {
+      alert("Failed to revoke access: " + error.message);
+    } else {
+      await logAction("revoke_user", userId, { status: "rejected" });
+      await fetchUsers();
+    }
     setActionLoading(null);
   }
 
@@ -167,7 +202,7 @@ export default function AdminUserManagement() {
                 {filteredUsers.map((user) => (
                   <tr key={user.id} style={{ borderBottom: `1px solid ${t.border}` }}>
                     <td style={tdStyle(t)}>
-                      <div style={{ fontWeight: 600, color: t.txt }}>{user.full_name || "No name"}</div>
+                      <div style={{ fontWeight: 600, color: t.txt }}>{user.full_name || (user.email ? user.email.split("@")[0] : "Unnamed")}</div>
                       <div style={{ fontSize: 12, color: t.txtDim }}>{user.email}</div>
                     </td>
                     <td style={tdStyle(t)}>
@@ -231,7 +266,7 @@ export default function AdminUserManagement() {
                             onClick={() => deleteUser(user.id)}
                             disabled={actionLoading === user.id}
                             style={actionBtnStyle(t, "#F87171")}
-                            title="Reject/Delete"
+                            title="Revoke access (marks as rejected)"
                           >
                             🗑️
                           </button>

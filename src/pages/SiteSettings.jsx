@@ -415,13 +415,27 @@ export default function SiteSettings() {
 
   async function handleSave() {
     setSaving(true);
-    const updates = Object.entries(editedValues).map(([key, value]) =>
-      supabase.from("site_settings").update({ setting_value: value }).eq("setting_key", key)
+    const entries = Object.entries(editedValues);
+    const results = await Promise.all(
+      entries.map(([key, value]) =>
+        supabase.from("site_settings").update({ setting_value: value }).eq("setting_key", key)
+      )
     );
-    await Promise.all(updates);
-    setMessage({ type: "success", text: "Settings saved!" });
+    // Surface failures instead of always claiming success (e.g. RLS denial
+    // or a key that no longer exists).
+    const failed = results
+      .map((res, i) => ({ key: entries[i][0], error: res.error }))
+      .filter((x) => x.error);
+    if (failed.length) {
+      setMessage({
+        type: "error",
+        text: `Could not save ${failed.length} of ${entries.length} setting(s): ${failed[0].error.message}`,
+      });
+    } else {
+      setMessage({ type: "success", text: "Settings saved!" });
+    }
     setSaving(false);
-    setTimeout(() => setMessage(null), 3000);
+    setTimeout(() => setMessage(null), 4000);
   }
 
   const filteredSettings = settings.filter(s => s.category === activeCategory);

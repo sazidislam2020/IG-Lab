@@ -24,7 +24,12 @@ export default function ProtectedRoute({ children, requiredRole }) {
   if (profile && profile.status === "pending") {
     return (
       <div style={styles.pending}>
-        <div style={styles.pendingIcon}>⏳</div>
+        <div style={styles.pendingIcon} aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+        </div>
         <h2 style={{ marginBottom: 12 }}>Account Pending Approval</h2>
         <p style={{ color: t.txtSec, maxWidth: 400, lineHeight: 1.6, marginBottom: 24 }}>
           Your account is waiting for admin approval. You'll be able to access
@@ -51,7 +56,12 @@ export default function ProtectedRoute({ children, requiredRole }) {
   if (profile && profile.status === "rejected") {
     return (
       <div style={styles.pending}>
-        <div style={styles.pendingIcon}>❌</div>
+        <div style={styles.pendingIcon} aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M15 9l-6 6M9 9l6 6" />
+          </svg>
+        </div>
         <h2 style={{ marginBottom: 12 }}>Account Not Approved</h2>
         <p style={{ color: t.txtSec, maxWidth: 400, lineHeight: 1.6, marginBottom: 24 }}>
           Your account was not approved. Please contact support for more

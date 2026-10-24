@@ -118,9 +118,17 @@ function Nav({ S, TC }) {
   const { toggleTheme, isDark } = useTheme();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    // The app's global CSS makes #root (not the window) the scroll
+    // container in some layouts — watch both so the pill nav always
+    // gets its "scrolled" state.
+    const root = document.getElementById("root");
+    const onScroll = () => setScrolled(Math.max(window.scrollY, root ? root.scrollTop : 0) > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    root?.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      root?.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
@@ -131,7 +139,7 @@ function Nav({ S, TC }) {
           width: "100%", maxWidth: 1100, padding: "8px 8px 8px 20px",
           borderRadius: 999, background: scrolled ? (TC.bg === "#FAFAFA" ? "rgba(255,255,255,0.95)" : "rgba(9,9,11,0.95)") : (TC.bg === "#FAFAFA" ? "rgba(255,255,255,0.8)" : "rgba(9,9,11,0.8)"),
           backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-          border: `1px solid ${scrolled ? T.borderLight : T.border}`,
+          border: `1px solid ${scrolled ? TC.borderLight : TC.border}`,
           boxShadow: scrolled ? (TC.bg === "#FAFAFA" ? "0 8px 32px rgba(0,0,0,0.08)" : "0 8px 32px rgba(0,0,0,0.5)") : (TC.bg === "#FAFAFA" ? "0 4px 16px rgba(0,0,0,0.05)" : "0 4px 16px rgba(0,0,0,0.3)"),
           pointerEvents: "auto", transition: "all 0.4s " + T.ease,
         }}>
@@ -165,7 +173,7 @@ function Nav({ S, TC }) {
         </nav>
       </div>
       {mobileOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(9,9,11,0.95)", backdropFilter: "blur(24px)", zIndex: 9998, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s ease" }} onClick={() => setMobileOpen(false)}>
+        <div style={{ position: "fixed", inset: 0, background: TC.bg === "#FAFAFA" ? "rgba(255,255,255,0.97)" : "rgba(9,9,11,0.95)", backdropFilter: "blur(24px)", zIndex: 9998, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.3s ease" }} onClick={() => setMobileOpen(false)}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }} onClick={e => e.stopPropagation()}>
             {["Features", "Pricing"].map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 600, color: TC.txtSec, textDecoration: "none", padding: "12px 24px" }} onClick={() => setMobileOpen(false)}>{l}</a>
@@ -203,7 +211,7 @@ function Hero({ S, TC }) {
       {/* Background effects */}
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${T.accent}12, transparent 60%)`, pointerEvents: "none" }} />
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 50% at 80% 50%, ${T.cyan}08, transparent 50%)`, pointerEvents: "none" }} />
-      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "72px 72px", maskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${TC.bg === "#FAFAFA" ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.02)"} 1px, transparent 1px), linear-gradient(90deg, ${TC.bg === "#FAFAFA" ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.02)"} 1px, transparent 1px)`, backgroundSize: "72px 72px", maskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent)", pointerEvents: "none" }} />
 
       <div className="hero-content" style={{ maxWidth: T.maxW, margin: "0 auto", padding: "120px 40px 80px", width: "100%", display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
         {/* Left */}
@@ -450,7 +458,7 @@ function Pricing({ S, TC }) {
                   </li>
                 ))}
               </ul>
-              <Link to="/signup" style={{ display: "block", width: "100%", textAlign: "center", fontFamily: T.fontBody, fontSize: 14, fontWeight: 600, padding: "12px 0", borderRadius: 10, textDecoration: "none", transition: "all 0.3s " + T.ease, cursor: "pointer", background: p.popular ? `linear-gradient(135deg, ${T.accent}, ${T.accentDark})` : "transparent",              border: p.popular ? "none" : `1px solid ${c.border}`, color: p.popular ? "#fff" : c.txtSec }}>
+              <Link to="/signup" style={{ display: "block", width: "100%", textAlign: "center", fontFamily: T.fontBody, fontSize: 14, fontWeight: 700, padding: "12px 0", borderRadius: 10, textDecoration: "none", transition: "all 0.3s " + T.ease, cursor: "pointer", background: p.popular ? `linear-gradient(135deg, ${T.accent}, ${T.accentDark})` : "transparent",              border: p.popular ? "none" : `1px solid ${c.border}`, color: p.popular ? T.accentInk : c.txtSec }}>
                 {p.name === "Institution" ? "Contact Us" : "Get Started"}
               </Link>
             </div>
@@ -468,14 +476,14 @@ function CTA({ S, TC }) {
     <section className="section-padding" style={{ padding: "120px 40px", position: "relative" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 50% at 50% 50%, ${T.accent}10, transparent)`, pointerEvents: "none" }} />
       <Reveal>
-        <div className="cta-card" style={{ position: "relative", maxWidth: 700, margin: "0 auto", textAlign: "center", padding: "64px 48px", background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }}>
+        <div className="cta-card" style={{ position: "relative", maxWidth: 700, margin: "0 auto", textAlign: "center", padding: "64px 48px", background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, boxShadow: c.bg === "#FAFAFA" ? "0 24px 64px rgba(16,24,40,0.08)" : "0 24px 64px rgba(0,0,0,0.4)" }}>
           <h2 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 700, lineHeight: 1.15, letterSpacing: "-0.03em", color: c.txt, marginBottom: 16 }}>
             {S.cta_title}
           </h2>
           <p style={{ fontFamily: T.fontBody, fontSize: 17, lineHeight: 1.6, color: c.txtSec, maxWidth: 440, margin: "0 auto 36px" }}>
             {S.cta_subtitle}
           </p>
-          <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", fontFamily: T.fontBody, fontSize: 17, fontWeight: 600, color: T.accentInk, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "18px 40px", borderRadius: 12, textDecoration: "none", boxShadow: `0 0 24px ${T.accent}30`, transition: "all 0.4s " + T.ease, animation: "pulseGlow 3s ease-in-out infinite" }}>
+          <Link to="/signup" style={{ display: "inline-flex", alignItems: "center", fontFamily: T.fontBody, fontSize: 17, fontWeight: 700, color: T.accentInk, background: `linear-gradient(135deg, ${T.accent}, ${T.accentDark})`, padding: "18px 40px", borderRadius: 12, textDecoration: "none", boxShadow: `0 0 24px ${T.accent}30`, transition: "all 0.4s " + T.ease, animation: "pulseGlow 3s ease-in-out infinite" }}>
             {S.cta_button_text}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 8 }}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </Link>
@@ -490,7 +498,7 @@ function CTA({ S, TC }) {
 function Footer({ S, TC }) {
   const c = TC;
   return (
-    <footer className="section-padding" style={{ borderTop: `1px solid ${T.border}`, padding: "64px 40px 32px", background: c.surface, position: "relative", zIndex: 1 }}>
+    <footer className="section-padding" style={{ borderTop: `1px solid ${c.border}`, padding: "64px 40px 32px", background: c.surface, position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: T.maxW, margin: "0 auto" }}>
         <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", gap: 48, marginBottom: 40, flexWrap: "wrap" }}>
           <div style={{ maxWidth: 280 }}>
@@ -517,10 +525,10 @@ function Footer({ S, TC }) {
             ))}
           </div>
         </div>
-        <div style={{ height: 1, background: T.border, marginBottom: 20 }} />
+        <div style={{ height: 1, background: c.border, marginBottom: 20 }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.txtDim }}>{S.footer_copyright}</span>
-          <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.txtDim }}>{S.footer_made_in}</span>
+          <span style={{ fontFamily: T.fontBody, fontSize: 12, color: c.txtDim }}>{S.footer_copyright}</span>
+          <span style={{ fontFamily: T.fontBody, fontSize: 12, color: c.txtDim }}>{S.footer_made_in}</span>
         </div>
       </div>
     </footer>
@@ -530,12 +538,12 @@ function Footer({ S, TC }) {
 // ─── Main ────────────────────────────────────────────────────────
 export default function Landing() {
   const S = useSiteSettings();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   // Merge theme colors into T for child components
   const TC = { ...T, bg: colors.bg, surface: colors.surface, card: colors.card, border: colors.border, borderLight: colors.borderLight, txt: colors.txt, txtSec: colors.txtSec, txtDim: colors.txtDim };
   return (
     <div style={{ background: colors.bg, minHeight: "100vh", position: "relative", transition: "background 0.3s" }}>
-      <div className="grain-overlay" />
+      {isDark && <div className="grain-overlay" />}
       <Nav S={S} TC={TC} />
       <Hero S={S} TC={TC} />
       <Partners S={S} TC={TC} />

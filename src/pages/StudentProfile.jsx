@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import CertificateView from '../components/CertificateView';
+import DesignedCertificate from '../components/design/DesignedCertificate';
 import { useTheme } from '../contexts/ThemeContext';
 import Icon from '../components/Icon';
 
@@ -183,15 +183,8 @@ export default function StudentProfile() {
                     <div style={{ fontSize: 12, color: t.txtDim }}>Completed {new Date(cert.earned_at).toLocaleDateString()}</div>
                   </div>
                 </div>
-                {/* Visual certificate model — view only, no download */}
-                <CertificateView
-                  studentName={cert.student_name}
-                  courseName={cert.course_name}
-                  completionDate={cert.earned_at}
-                  totalPoints={cert.total_points}
-                  certificateId={cert.certificate_id}
-                  compact
-                />
+                {/* Admin-designed certificate with download */}
+                <DesignedCertificate certificate={cert} profile={profile} width={300} />
               </div>
             ))}
           </div>

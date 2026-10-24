@@ -76,8 +76,13 @@ export default function ResetPassword() {
     <div style={styles.page}>
       <div style={styles.card}>
         <Link to="/" style={styles.brand}>
-          <span style={styles.spark} />
-          IGNITE LAB
+          <span style={styles.brandMark}>
+            <span style={styles.spark} />
+          </span>
+          <span>
+            <span style={styles.brandName}>IGNITE LAB</span>
+            <span style={styles.brandTag}>Robotics Education Platform</span>
+          </span>
         </Link>
 
         {!hasSession ? (
@@ -87,25 +92,34 @@ export default function ResetPassword() {
               This password-reset link is invalid or has expired. Go back to
               the login page and request a new one.
             </p>
-            <Link to="/login" style={styles.button}>Back to login</Link>
+            <Link to="/login" style={styles.button}>
+              Back to login
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </Link>
           </>
         ) : done ? (
           <>
-            <h1 style={styles.title}>Password updated ✅</h1>
-            <p style={styles.subtitle}>Taking you to your dashboard...</p>
+            <h1 style={styles.title}>Password updated</h1>
+            <p style={styles.subtitle}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.success} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: -3, marginRight: 6 }}><polyline points="20 6 9 17 4 12"/></svg>
+              Taking you to your dashboard...
+            </p>
           </>
         ) : (
           <>
             <h1 style={styles.title}>Set a new password</h1>
             <p style={styles.subtitle}>Choose a new password for your account.</p>
 
-            {error && <div style={styles.error}>{error}</div>}
+            {error && <div style={styles.error} role="alert">{error}</div>}
 
             <form onSubmit={handleSubmit} style={styles.form}>
               <div style={styles.field}>
-                <label style={styles.label}>New password</label>
+                <label htmlFor="reset-password" style={styles.label}>New password</label>
                 <input
+                  id="reset-password"
+                  name="password"
                   type="password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -116,9 +130,12 @@ export default function ResetPassword() {
                 />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Confirm password</label>
+                <label htmlFor="reset-confirm" style={styles.label}>Confirm password</label>
                 <input
+                  id="reset-confirm"
+                  name="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
@@ -129,6 +146,9 @@ export default function ResetPassword() {
               </div>
               <button type="submit" disabled={busy} style={{ ...styles.button, opacity: busy ? 0.6 : 1 }}>
                 {busy ? "Saving..." : "Update password"}
+                {!busy && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                )}
               </button>
             </form>
           </>
@@ -142,113 +162,146 @@ export default function ResetPassword() {
   );
 }
 
-const makeStyles = (t) => ({
-  page: {
-    minHeight: "100vh",
-    background: t.bg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    fontFamily: "Inter, system-ui, sans-serif",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 400,
-    background: t.card,
-    border: `1px solid ${t.border}`,
-    borderRadius: 12,
-    padding: "40px 32px",
-    boxSizing: "border-box",
-  },
-  brand: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    fontFamily: "'Space Grotesk', sans-serif",
-    fontWeight: 700,
-    fontSize: 14,
-    color: t.txtSec,
-    marginBottom: 32,
-    textDecoration: "none",
-  },
-  spark: {
-    width: 9,
-    height: 9,
-    background: "#FF6B2B",
-    borderRadius: 2,
-    transform: "rotate(45deg)",
-    boxShadow: "0 0 6px #FF6B2B",
-  },
-  title: {
-    fontFamily: "'Space Grotesk', sans-serif",
-    fontSize: 26,
-    fontWeight: 700,
-    color: t.txt,
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: t.txtSec,
-    fontSize: 14.5,
-    marginBottom: 24,
-    lineHeight: 1.55,
-  },
-  error: {
-    background: "rgba(239,68,68,0.1)",
-    border: "1px solid rgba(239,68,68,0.3)",
-    color: "#FCA5A5",
-    padding: "10px 14px",
-    borderRadius: 8,
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 18,
-  },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: 500,
-    color: t.txtSec,
-  },
-  input: {
-    background: t.bg === "#FAFAFA" ? "#F4F4F5" : "#0F1420",
-    border: `1px solid ${t.border}`,
-    borderRadius: 8,
-    padding: "12px 14px",
-    fontSize: 15,
-    color: t.txt,
-    outline: "none",
-  },
-  button: {
-    display: "block",
-    textAlign: "center",
-    background: "#FF6B2B",
-    color: t.accentInk, // ink label = 6.1:1 (white failed AA)
-    border: "none",
-    borderRadius: 8,
-    padding: "13px 20px",
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: "pointer",
-    marginTop: 4,
-    textDecoration: "none",
-  },
-  footer: {
-    textAlign: "center",
-    color: t.txtSec,
-    fontSize: 14,
-    marginTop: 24,
-  },
-  link: {
-    color: t.accentLink,
-    textDecoration: "none",
-    fontWeight: 500,
-  },
-});
+const makeStyles = (t) => {
+  const isLight = t.bg === "#FAFAFA";
+  return {
+    page: {
+      minHeight: "100vh",
+      background: t.bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "48px 20px",
+      fontFamily: "Inter, system-ui, sans-serif",
+    },
+    card: {
+      width: "100%",
+      maxWidth: 420,
+      background: t.card,
+      border: `1px solid ${t.border}`,
+      borderRadius: 16,
+      padding: "40px 32px",
+      boxSizing: "border-box",
+      boxShadow: isLight ? t.shadow : "none",
+    },
+    brand: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      marginBottom: 28,
+      textDecoration: "none",
+    },
+    brandMark: {
+      width: 38,
+      height: 38,
+      borderRadius: 11,
+      background: `linear-gradient(135deg, ${t.accent}, #E85D1A)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    spark: {
+      width: 12,
+      height: 12,
+      background: "#fff",
+      borderRadius: 2,
+      transform: "rotate(45deg)",
+    },
+    brandName: {
+      display: "block",
+      fontFamily: "'Space Grotesk', sans-serif",
+      fontWeight: 700,
+      fontSize: 15,
+      letterSpacing: "-0.02em",
+      color: t.txt,
+    },
+    brandTag: {
+      display: "block",
+      fontSize: 11.5,
+      color: t.txtDim,
+      marginTop: 1,
+    },
+    title: {
+      fontFamily: "'Space Grotesk', sans-serif",
+      fontSize: 26,
+      fontWeight: 700,
+      color: t.txt,
+      textAlign: "center",
+      marginBottom: 8,
+      letterSpacing: "-0.02em",
+    },
+    subtitle: {
+      color: t.txtSec,
+      fontSize: 14.5,
+      marginBottom: 24,
+      lineHeight: 1.55,
+      textAlign: "center",
+    },
+    error: {
+      background: isLight ? "#FEF2F2" : "rgba(239,68,68,0.1)",
+      border: `1px solid ${isLight ? "#FECACA" : "rgba(239,68,68,0.3)"}`,
+      color: isLight ? "#B91C1C" : "#FCA5A5",
+      padding: "10px 14px",
+      borderRadius: 10,
+      fontSize: 13.5,
+      marginBottom: 18,
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 16,
+    },
+    field: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 7,
+    },
+    label: {
+      fontSize: 13.5,
+      fontWeight: 600,
+      color: t.txt,
+    },
+    input: {
+      background: isLight ? "#FFFFFF" : "#0F1420",
+      border: `1px solid ${isLight ? "#D8DAE0" : t.border}`,
+      borderRadius: 10,
+      padding: "13px 14px",
+      fontSize: 15,
+      color: t.txt,
+      outline: "none",
+      width: "100%",
+      boxSizing: "border-box",
+    },
+    button: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      background: t.accent,
+      color: t.accentInk, // ink label = 6.1:1 (white failed AA)
+      border: "none",
+      borderRadius: 10,
+      padding: "14px 20px",
+      fontSize: 15.5,
+      fontWeight: 700,
+      cursor: "pointer",
+      marginTop: 4,
+      textDecoration: "none",
+      width: "100%",
+      boxSizing: "border-box",
+    },
+    footer: {
+      textAlign: "center",
+      color: t.txtSec,
+      fontSize: 14,
+      marginTop: 22,
+    },
+    link: {
+      color: t.accentLink,
+      textDecoration: "none",
+      fontWeight: 500,
+    },
+  };
+};

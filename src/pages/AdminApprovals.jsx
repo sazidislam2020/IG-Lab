@@ -171,7 +171,7 @@ export default function AdminApprovals() {
                 {users.map((user) => (
                   <tr key={user.id} style={styles.tr}>
                     <td style={styles.td}>{user.email}</td>
-                    <td style={styles.td}>{user.full_name || "—"}</td>
+                    <td style={styles.td}>{user.full_name || (user.email ? user.email.split("@")[0] : "—")}</td>
                     <td style={styles.td}>
                       <select
                         value={user.role}

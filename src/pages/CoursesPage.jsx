@@ -146,7 +146,11 @@ export default function CoursesPage() {
                     ) : (
                       <span style={{ fontSize: 10, fontWeight: 700, color: "#FF5A1F", background: "rgba(255,90,31,0.12)", padding: "3px 10px", borderRadius: 100 }}>PREMIUM</span>
                     )}
-                    {enrollCounts[c.id] > 0 && (
+                    {/* Enrollment counts come from a client-side count of
+                        course_enrollments, which RLS limits to a student's own
+                        row — students would see a wrong (undercounted) number,
+                        so only staff (who see all rows) get the chip. */}
+                    {!isStudent && enrollCounts[c.id] > 0 && (
                       <span style={{ fontSize: 11, color: t.txtDim }}>👥 {enrollCounts[c.id]}</span>
                     )}
                   </div>

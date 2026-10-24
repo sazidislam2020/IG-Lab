@@ -14,6 +14,7 @@ export default function Dashboard() {
 
   const [stats, setStats] = useState({ totalPoints: 0, tasksPassed: 0, coursesEnrolled: 0, rank: 0 });
   const [courses, setCourses] = useState([]);
+  const [courseFilter, setCourseFilter] = useState("all"); // all | active | done
   const [recentSubs, setRecentSubs] = useState([]);
   const [topStudents, setTopStudents] = useState([]);
   const [upcomingClasses, setUpcomingClasses] = useState([]);
@@ -203,8 +204,8 @@ export default function Dashboard() {
     <>
     <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     <div className="dashboard-page" style={{ minHeight: "100vh", background: t.bg, color: t.txt, fontFamily: "'Inter', system-ui, sans-serif", transition: "background 0.3s, color 0.3s" }}>
-      {/* Nav */}
-      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 32px", borderBottom: `1px solid ${t.border}`, background: isDark ? "rgba(9,9,11,0.92)" : "rgba(250,250,250,0.92)", backdropFilter: "blur(6px)", position: "sticky", top: 0, zIndex: 100 }}>
+      {/* Nav — Ostad-style top bar */}
+      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 32px", borderBottom: `1px solid ${t.border}`, background: isDark ? "rgba(9,9,11,0.92)" : "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
           <span style={{ width: 9, height: 9, background: "#FF6B2B", borderRadius: 2, transform: "rotate(45deg)", boxShadow: "0 0 10px #FF6B2B" }} />
           <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, color: t.txt }}>IGNITE LAB</span>
@@ -230,7 +231,7 @@ export default function Dashboard() {
         {/* Hero Welcome */}
         <div style={{ marginBottom: 36 }}>
           <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 700, marginBottom: 6, color: t.txt }}>
-            {greeting}, {profile?.full_name?.split(" ")[0] || "there"} 👋
+            {greeting}, {profile?.full_name?.split(" ")[0] || profile?.email?.split("@")[0] || "there"} 👋
           </h1>
           <p style={{ color: t.txtSec, fontSize: 16, lineHeight: 1.6, maxWidth: 600 }}>
             {isStudent && "Ready to code? Jump into your courses or pick up where you left off."}
@@ -252,7 +253,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => navigate("/payment")}
-              style={{ background: "#FF6B2B", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ background: "#FF6B2B", color: t.accentInk, border: "none", borderRadius: 10, padding: "10px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
             >
               Upgrade Now →
             </button>
@@ -293,11 +294,51 @@ export default function Dashboard() {
                 {courses.length === 0 ? (
                   <EmptyCard message="No courses yet" action="Browse courses to get started" onClick={() => navigate("/courses")} t={t} />
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {courses.map((c) => (
-                      <CourseCard key={c.id} course={c} t={t} isDark={isDark} onClick={() => navigate(`/courses/${c.id}`)} />
-                    ))}
-                  </div>
+                  <>
+                    {/* Ostad-style filter chips */}
+                    <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }} role="tablist" aria-label="Filter courses">
+                      {[
+                        { key: "all", label: "All courses" },
+                        { key: "active", label: "In progress" },
+                        { key: "done", label: "Completed" },
+                      ].map((f) => {
+                        const active = courseFilter === f.key;
+                        return (
+                          <button
+                            key={f.key}
+                            role="tab"
+                            aria-selected={active}
+                            onClick={() => setCourseFilter(f.key)}
+                            style={{
+                              fontFamily: "'Inter', system-ui, sans-serif",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              padding: "8px 16px",
+                              borderRadius: 100,
+                              cursor: "pointer",
+                              border: `1px solid ${active ? "transparent" : t.border}`,
+                              background: active ? t.accent : (t.bg === "#FAFAFA" ? "#FFFFFF" : t.card),
+                              color: active ? t.accentInk : t.txtSec,
+                              transition: "all 0.15s",
+                            }}
+                          >
+                            {f.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {(() => {
+                        const filtered = courses.filter((c) => courseFilter === "all" || (courseFilter === "done" ? c.percentage === 100 : c.percentage < 100));
+                        if (filtered.length === 0) {
+                          return <EmptyCard message="Nothing here yet" action="Try a different filter" t={t} />;
+                        }
+                        return filtered.map((c) => (
+                          <CourseCard key={c.id} course={c} t={t} isDark={isDark} onClick={() => navigate(`/courses/${c.id}`)} />
+                        ));
+                      })()}
+                    </div>
+                  </>
                 )}
               </section>
             )}
@@ -333,6 +374,7 @@ export default function Dashboard() {
                   <>
                     <ActionCard icon="📡" title="Start Call" desc="Live video session" color="#F87171" t={t} onClick={() => navigate("/classes/create")} />
                     <ActionCard icon="📝" title="Courses" desc="Manage content" color="#FF6B2B" t={t} onClick={() => navigate("/admin/courses")} />
+                    <ActionCard icon="🎨" title="Certificates" desc="Design certs & posters" color="#FACC15" t={t} onClick={() => navigate("/admin/designs")} />
                     <ActionCard icon="🎨" title="Site Settings" desc="Customize site" color="#A78BFA" t={t} onClick={() => navigate("/admin/site-settings")} />
                     <ActionCard icon="📊" title="Analytics" desc="View stats" color="#38BDF8" t={t} onClick={() => navigate("/admin/analytics")} />
                   </>
@@ -342,8 +384,8 @@ export default function Dashboard() {
                     <ActionCard icon="👥" title="User Management" desc="Manage all users" color="#FF5A1F" t={t} onClick={() => navigate("/admin/users")} />
                     <ActionCard icon="🔐" title="Approvals" desc="Review accounts" color="#FFB238" t={t} onClick={() => navigate("/admin/approvals")} />
                     <ActionCard icon="📋" title="Audit Log" desc="Review actions" color="#38BDF8" t={t} onClick={() => navigate("/admin/audit-log")} />
-                    <ActionCard icon="🎨" title="Site Settings" desc="Customize site" color="#A78BFA" t={t} onClick={() => navigate("/admin/site-settings")} />
-                    <ActionCard icon="📊" title="Analytics" desc="View stats" color="#38BDF8" t={t} onClick={() => navigate("/admin/analytics")} />
+                    {/* Site Settings + Analytics are already rendered by the isAdmin
+                        block above (isAdmin covers super_admin too). */}
                   </>
                 )}
               </div>
@@ -475,13 +517,33 @@ export default function Dashboard() {
 /* ── Sub-components ── */
 
 function StatCard({ icon, value, label, color, t }) {
+  const isLight = t.bg === "#FAFAFA";
   return (
-    <div style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, padding: "20px 18px", transition: "background 0.3s, border-color 0.3s" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 20 }}>{icon}</span>
+    <div style={{
+      background: isLight ? `${color}14` : t.card,
+      border: `1px solid ${isLight ? `${color}26` : t.border}`,
+      borderRadius: 14,
+      padding: "18px 18px",
+      transition: "background 0.3s, border-color 0.3s",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 30, fontWeight: 800, color: t.txt, lineHeight: 1, letterSpacing: "-0.03em" }}>{value}</div>
+          <div style={{ fontSize: 12.5, color: t.txtDim, marginTop: 7, fontWeight: 500 }}>{label}</div>
+        </div>
+        <span style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: isLight ? "#FFFFFF" : `${color}1F`,
+          border: isLight ? `1px solid ${color}26` : "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 16,
+          flexShrink: 0,
+        }} aria-hidden="true">{icon}</span>
       </div>
-      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 12, color: t.txtDim, marginTop: 4, fontWeight: 500 }}>{label}</div>
     </div>
   );
 }
@@ -502,30 +564,87 @@ function SectionHeader({ title, t, action }) {
 function CourseCard({ course, t, onClick, isDark }) {
   const c = course;
   const color = c.percentage === 100 ? "#4ADE80" : c.percentage > 50 ? "#38BDF8" : "#FF6B2B";
+  const isLight = t.bg === "#FAFAFA";
 
   return (
     <div
       onClick={onClick}
-      style={{ background: t.card, border: `1px solid ${t.border}`, borderRadius: 12, padding: "18px 20px", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", gap: 16 }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${color}40`; e.currentTarget.style.transform = "translateY(-1px)"; }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+      style={{
+        background: t.card,
+        border: `1px solid ${t.border}`,
+        borderRadius: 14,
+        padding: 16,
+        cursor: "pointer",
+        transition: "all 0.15s",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        boxShadow: isLight ? "0 1px 2px rgba(16,24,40,0.04)" : "none",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${color}60`; e.currentTarget.style.transform = "translateY(-1px)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = "none"; }}
     >
+      {/* Course thumbnail — Ostad uses a cover image; we show a tinted initial */}
+      <div style={{
+        width: 68,
+        height: 56,
+        borderRadius: 10,
+        background: `linear-gradient(135deg, ${color}2E, ${color}10)`,
+        border: isLight ? `1px solid ${color}26` : "none",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }} aria-hidden="true">
+        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, color }}>
+          {c.title.charAt(0).toUpperCase()}
+        </span>
+      </div>
+
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: t.txt, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</div>
-        <div style={{ fontSize: 12, color: t.txtDim, marginBottom: 10 }}>
-          {c.completedTasks}/{c.totalTasks} tasks · {c.moduleCount} modules
-          {c.is_free && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#4ADE80", background: "rgba(74,222,128,0.12)", padding: "2px 8px", borderRadius: 100 }}>FREE</span>}
+        <div style={{ fontSize: 15, fontWeight: 600, color: t.txt, marginBottom: 7, lineHeight: 1.35 }}>{c.title}</div>
+        {/* Meta chips — Ostad-style pill badges */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: t.txtSec, background: isLight ? "#F4F4F5" : "rgba(255,255,255,0.06)", border: `1px solid ${t.border}`, padding: "3px 9px", borderRadius: 100 }}>
+            📚 {c.completedTasks}/{c.totalTasks} tasks
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: t.txtSec, background: isLight ? "#F4F4F5" : "rgba(255,255,255,0.06)", border: `1px solid ${t.border}`, padding: "3px 9px", borderRadius: 100 }}>
+            📦 {c.moduleCount} modules
+          </span>
+          {c.is_free && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#047857", background: "rgba(74,222,128,0.16)", border: "1px solid rgba(74,222,128,0.35)", padding: "3px 9px", borderRadius: 100 }}>FREE</span>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ flex: 1, height: 6, background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ flex: 1, height: 6, background: isDark ? "rgba(255,255,255,0.06)" : "#EEF0F3", borderRadius: 3, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${c.percentage}%`, background: color, borderRadius: 3, transition: "width 0.4s ease" }} />
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 32, textAlign: "right" }}>{c.percentage}%</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 34, textAlign: "right" }}>{c.percentage}%</span>
         </div>
       </div>
-      {c.totalPoints > 0 && (
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#FF6B2B", background: "rgba(255,107,43,0.1)", padding: "4px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>⭐ {c.totalPoints}</span>
-      )}
+
+      {/* Right side: points + go arrow (Ostad: dark "কোর্স যায় →" button) */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+        {c.totalPoints > 0 && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#C2410C", background: "rgba(255,107,43,0.12)", padding: "4px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>⭐ {c.totalPoints}</span>
+        )}
+        <span style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: isLight ? "#18181B" : t.surface,
+          border: `1px solid ${isLight ? "#18181B" : t.border}`,
+          color: isLight ? "#FFFFFF" : t.txt,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }} aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </span>
+      </div>
     </div>
   );
 }

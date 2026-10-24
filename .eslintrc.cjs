@@ -14,7 +14,9 @@ module.exports = {
     ecmaFeatures: { jsx: true },
   },
   settings: { react: { version: "detect" } },
-  ignorePatterns: ["dist", "node_modules", "*.cjs"],
+  // Note: package.json is "type": "module", so this config must stay .cjs.
+  // Do not ignore *.cjs here — that would silently exempt any CJS source file.
+  ignorePatterns: ["dist", "node_modules"],
   rules: {
     // Vite uses the automatic JSX runtime — no React import needed
     "react/react-in-jsx-scope": "off",

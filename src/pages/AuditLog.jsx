@@ -35,11 +35,15 @@ export default function AuditLog() {
 
   useEffect(() => {
     async function fetchLogs() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('audit_log')
-        .select('*, profiles!audit_log_actor_id_fkey(email, full_name), profiles!audit_log_target_user_id_fkey(email, full_name)')
+        // Two FKs point at profiles — each embed needs its own alias, otherwise
+        // PostgREST returns "table name specified more than once" and the page
+        // silently renders as if the log were empty.
+        .select('*, actor:profiles!audit_log_actor_id_fkey(email, full_name), target:profiles!audit_log_target_user_id_fkey(email, full_name)')
         .order('created_at', { ascending: false })
         .limit(100);
+      if (error) console.error('Audit log load failed:', error.message);
       setLogs(data || []);
       setLoading(false);
     }
@@ -80,10 +84,12 @@ export default function AuditLog() {
                     <span style={{ ...S.badge, background: style.bg, color: style.color }}>{style.label}</span>
                   </td>
                   <td style={S.td}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: t.txt }}>{log.profiles?.full_name || log.profiles?.email || 'System'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: t.txt }}>{log.actor?.full_name || log.actor?.email || 'System'}</div>
                   </td>
                   <td style={S.td}>
-                    <div style={{ fontSize: 13, color: t.txtSec }}>{log.details?.target_email || '—'}</div>
+                    <div style={{ fontSize: 13, color: t.txtSec }}>
+                      {log.target?.full_name || log.target?.email || log.details?.target_email || '—'}
+                    </div>
                   </td>
                   <td style={S.td}>
                     <div style={{ fontSize: 12, color: t.txtDim }}>
